@@ -1,0 +1,188 @@
+---
+title: "Team mTurk - Image Bounding Scoring"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r setup, include=FALSE}
+library(data.table)
+library(dplyr)
+library(rjson)
+#library(knitr)
+```
+
+```{r}
+d <- fread("../data/sample_mturk_output.csv")
+head(d)
+```
+```{r}
+
+convert_mturk_bounding_old <- function(mturk_bounding_boxes) {
+  # Mechanical Turk provides results with double-quoted JSON consisting of:
+  #   height
+  #   width
+  #   top
+  #   left
+  #   label
+
+  # Converts to top-left and bottom-right coords
+  
+  # Replace double-quotes (assumes there are no empty values)
+  mturk_bounding_boxes <- gsub("\"\"", "\"", mturk_bounding_boxes)
+  bounding_boxes_list <- fromJSON(mturk_bounding_boxes)
+  
+  results_list <- list()
+  
+  for (bounding_box in bounding_boxes_list) {
+    top = bounding_box$top
+    left = bounding_box$left
+    bottom = top + bounding_box$height
+    right = left + bounding_box$width
+    
+    # Create top-left and bottom-right coords
+    bounding_coords <- list(c(top, left), c(bottom, right))
+
+    # Append to results
+    results_list <- append(results_list, list(bounding_coords))
+  }
+  
+  return(results_list)
+}
+
+convert_mturk_bounding <- function(mturk_bounding_boxes) {
+  # Mechanical Turk provides results with double-quoted JSON consisting of:
+  #   height
+  #   width
+  #   top
+  #   left
+  #   label
+
+  # Converts to top-left and bottom-right coords
+  
+  # Replace double-quotes (assumes there are no empty values)
+  mturk_bounding_boxes <- gsub("\"\"", "\"", mturk_bounding_boxes)
+  bounding_boxes_list <- fromJSON(mturk_bounding_boxes)
+  
+  top_results_list <- list()
+  bottom_results_list <- list()
+  right_results_list <- list()
+  left_results_list <- list()
+  
+  for (bounding_box in bounding_boxes_list) {
+    top = as.integer(bounding_box$top)
+    left = as.integer(bounding_box$left)
+    bottom = as.integer(top + bounding_box$height)
+    right = as.integer(left + bounding_box$width)
+
+    top_results_list <- append(top_results_list, top)
+    bottom_results_list <- append(bottom_results_list, bottom)
+    right_results_list <- append(right_results_list, right)
+    left_results_list <- append(left_results_list, left)
+  }
+
+  ret_dt <- data.table(
+    top = top_results_list,
+    bottom = bottom_results_list,
+    right = right_results_list,
+    left = left_results_list
+  )
+    
+  return(ret_dt)
+}
+
+extract_image_bounding_data <- function(dt) {
+  # Iterate through data.table, separate bounding boxes in to new rows in case there are multiple bounding boxes in any images. 
+  
+  results_dt <- data.table()
+  
+  for (i in 1:nrow(dt)) {
+    row <- dt[i, ]
+    
+    bounding_boxes_dt <- convert_mturk_bounding(row[, Answer.annotatedResult.boundingBoxes])
+    
+    # Add attributes for the HIT to bounding boxes
+    bounding_boxes_dt[, HITId := row[, HITId]]
+    bounding_boxes_dt[, HITTypeId := row[, HITTypeId]]
+    bounding_boxes_dt[, Reward := row[, Reward]]
+    bounding_boxes_dt[, AssignmentDurationInSeconds := row[, AssignmentDurationInSeconds]]
+    bounding_boxes_dt[, WorkerId := row[, WorkerId]]
+    bounding_boxes_dt[, AssignmentStatus := row[, AssignmentStatus]]
+    bounding_boxes_dt[, LifetimeApprovalRate := row[, LifetimeApprovalRate]]
+    bounding_boxes_dt[, Last30DaysApprovalRate := row[, Last30DaysApprovalRate]]
+    bounding_boxes_dt[, Last7DaysApprovalRate := row[, Last7DaysApprovalRate]]
+    bounding_boxes_dt[, Input.image_url := row[, Input.image_url]]
+    
+    # Concatinate to results
+    print(nrow(bounding_boxes_dt))
+    results_dt <- rbind(results_dt, bounding_boxes_dt)
+  }
+  
+  return(results_dt)
+}
+
+score_bounding_box <- function(true_coords, estimated_coords) {
+  
+}
+
+score_image <- function(image_name, bounding_boxes) {
+  
+}
+
+
+blah <- extract_image_bounding_data(d)
+
+
+#convert_mturk_bounding(d[, Answer.annotatedResult.boundingBoxes][1])
+
+
+#d[, Answer.annotatedResult.boundingBoxes][1]
+
+#d[, convert_mturk_bounding(Answer.annotatedResult.boundingBoxes), by = seq_len(nrow(d))]
+
+#d[, foo := c(c(1,2,3,4,5), c(1,2,3,4,5), c(1,2,3,4,5), c(1,2,3,4,5), c(1,2,3,4,5)) ]
+ 
+#d[, foo]
+ 
+#bounding_results <- convert_mturk_bounding(box_json)
+#print(bounding_results)
+```
+
+```{r}
+box_json <- d[, Answer.annotatedResult.boundingBoxes][1]
+
+convert_mturk_bounding(box_json)
+#print(box_json)
+#box_json <- "[{\"Foo\": 10}, {\"Foo\": 11}]"
+
+#box_json <- "[{\"\"height\"\":295,\"\"label\"\":\"\"Car\"\",\"\"left\"\":1094,\"\"top\"\":1017,\"\"width\"\":326},{\"\"height\"\":243,\"\"label\"\":\"\"Car\"\",\"\"left\"\":641,\"\"top\"\":1064,\"\"width\"\":363},{\"\"height\"\":132,\"\"label\"\":\"\"Car\"\",\"\"left\"\":604,\"\"top\"\":1001,\"\"width\"\":200},{\"\"height\"\":164,\"\"label\"\":\"\"Car\"\",\"\"left\"\":430,\"\"top\"\":990,\"\"width\"\":190},{\"\"height\"\":195,\"\"label\"\":\"\"Car\"\",\"\"left\"\":204,\"\"top\"\":990,\"\"width\"\":231}]"
+
+box_json <- gsub("\"\"", "\"", box_json)
+
+result <- fromJSON(box_json)
+print(result)
+```
+
+
+```{r}
+foo_dt <- data.table(
+  'foo' = c(c(1,2,3,4,5), c(1,2,3,4,5))
+)
+
+foo_dt[, bar := 'repeat']
+
+print(foo_dt)
+
+```
+
