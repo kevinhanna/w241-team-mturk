@@ -1,21 +1,10 @@
 ---
 title: "Team mTurk - Image Bounding Scoring"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
-```{r}
-plot(cars)
-```
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
 ```{r setup, include=FALSE}
 library(data.table)
 library(dplyr)
@@ -24,43 +13,18 @@ library(rjson)
 ```
 
 ```{r}
-d <- fread("../data/sample_mturk_output.csv")
-head(d)
+# Read the results from Mechanical Turk
+mturk_results_dt <- fread("../data/sample_mturk_output.csv")
+head(mturk_results_dt)
 ```
+
 ```{r}
+# Read in the correct bounding cooridinates
+image_coords_dt <- fread("../data/image_coords.csv")
+head(image_coords_dt)
+```
 
-convert_mturk_bounding_old <- function(mturk_bounding_boxes) {
-  # Mechanical Turk provides results with double-quoted JSON consisting of:
-  #   height
-  #   width
-  #   top
-  #   left
-  #   label
-
-  # Converts to top-left and bottom-right coords
-  
-  # Replace double-quotes (assumes there are no empty values)
-  mturk_bounding_boxes <- gsub("\"\"", "\"", mturk_bounding_boxes)
-  bounding_boxes_list <- fromJSON(mturk_bounding_boxes)
-  
-  results_list <- list()
-  
-  for (bounding_box in bounding_boxes_list) {
-    top = bounding_box$top
-    left = bounding_box$left
-    bottom = top + bounding_box$height
-    right = left + bounding_box$width
-    
-    # Create top-left and bottom-right coords
-    bounding_coords <- list(c(top, left), c(bottom, right))
-
-    # Append to results
-    results_list <- append(results_list, list(bounding_coords))
-  }
-  
-  return(results_list)
-}
-
+```{r}
 convert_mturk_bounding <- function(mturk_bounding_boxes) {
   # Mechanical Turk provides results with double-quoted JSON consisting of:
   #   height
@@ -75,10 +39,10 @@ convert_mturk_bounding <- function(mturk_bounding_boxes) {
   mturk_bounding_boxes <- gsub("\"\"", "\"", mturk_bounding_boxes)
   bounding_boxes_list <- fromJSON(mturk_bounding_boxes)
   
-  top_results_list <- list()
-  bottom_results_list <- list()
-  right_results_list <- list()
-  left_results_list <- list()
+  top_results_list <- c()
+  bottom_results_list <- c()
+  right_results_list <- c()
+  left_results_list <- c()
   
   for (bounding_box in bounding_boxes_list) {
     top = as.integer(bounding_box$top)
@@ -86,11 +50,12 @@ convert_mturk_bounding <- function(mturk_bounding_boxes) {
     bottom = as.integer(top + bounding_box$height)
     right = as.integer(left + bounding_box$width)
 
-    top_results_list <- append(top_results_list, top)
-    bottom_results_list <- append(bottom_results_list, bottom)
-    right_results_list <- append(right_results_list, right)
-    left_results_list <- append(left_results_list, left)
+    top_results_list <- c(top_results_list, top)
+    bottom_results_list <- c(bottom_results_list, bottom)
+    right_results_list <- c(right_results_list, right)
+    left_results_list <- c(left_results_list, left)
   }
+
 
   ret_dt <- data.table(
     top = top_results_list,
@@ -122,67 +87,70 @@ extract_image_bounding_data <- function(dt) {
     bounding_boxes_dt[, LifetimeApprovalRate := row[, LifetimeApprovalRate]]
     bounding_boxes_dt[, Last30DaysApprovalRate := row[, Last30DaysApprovalRate]]
     bounding_boxes_dt[, Last7DaysApprovalRate := row[, Last7DaysApprovalRate]]
-    bounding_boxes_dt[, Input.image_url := row[, Input.image_url]]
+    bounding_boxes_dt[, ImageId := row[, Input.image_url]] # Column renamed
+    
+    #bounding_boxes_dt[, bounding_box_score := -0.111]
     
     # Concatinate to results
-    print(nrow(bounding_boxes_dt))
     results_dt <- rbind(results_dt, bounding_boxes_dt)
   }
   
   return(results_dt)
 }
 
-score_bounding_box <- function(true_coords, estimated_coords) {
+score_bounding_box <- function(true_coords, turker_coords) {
+  # Calculate the difference in the top-right and bottom-left points
+  
+  top = as.integer(true_coords[, top]) - turker_coords[, top]
+  right = true_coords[, right] - turker_coords[, right]
+  first_distance <- sqrt(top^2 + right^2)
+
+  bottom = as.integer(true_coords[, bottom]) - turker_coords[, bottom]
+  left = true_coords[, left] - turker_coords[, left]
+  second_distance <- sqrt(bottom^2 + left^2)
+  
+  return(first_distance + second_distance)
   
 }
 
-score_image <- function(image_name, bounding_boxes) {
+
+
+
+
+```
+
+```{r}
+# Prepare the mturk results
+image_boundings_dt <- extract_image_bounding_data(mturk_results_dt)
+
+score_mturk_results <- function() {
+  scoring_results = c()
+  # Iterate through the correct bounding boxes and score the results
+  for (i in 1:nrow(image_coords_dt)) {
+    row <- image_coords_dt[i, ]
+    tmp_scoring_results = c()
   
+    matched_images_dt <- image_boundings_dt[ImageId == row[, ImageId], ]
+  
+    if (nrow(matched_images_dt) > 1) {
+      #cat("Too many matched images for: (", nrow(matched_images_dt), ")", print(row[, ImageId]))
+    }
+
+    # In case there are multiple bounding boxes, we'll grab the best score
+    for (i in 1:nrow(matched_images_dt)) {
+      bounding_box_score <- score_bounding_box(row[, ], matched_images_dt[, ])
+      tmp_scoring_results <- c(tmp_scoring_results, bounding_box_score)
+    }
+    scoring_results <- c(scoring_results, min(tmp_scoring_results))
+  }
+  scoring_results
 }
 
+mturk_results_dt[, bounding_box_score := score_mturk_results()]
 
-blah <- extract_image_bounding_data(d)
-
-
-#convert_mturk_bounding(d[, Answer.annotatedResult.boundingBoxes][1])
+print(mturk_results_dt[, c("HITId", "bounding_box_score")])
 
 
-#d[, Answer.annotatedResult.boundingBoxes][1]
-
-#d[, convert_mturk_bounding(Answer.annotatedResult.boundingBoxes), by = seq_len(nrow(d))]
-
-#d[, foo := c(c(1,2,3,4,5), c(1,2,3,4,5), c(1,2,3,4,5), c(1,2,3,4,5), c(1,2,3,4,5)) ]
- 
-#d[, foo]
- 
-#bounding_results <- convert_mturk_bounding(box_json)
-#print(bounding_results)
 ```
 
-```{r}
-box_json <- d[, Answer.annotatedResult.boundingBoxes][1]
-
-convert_mturk_bounding(box_json)
-#print(box_json)
-#box_json <- "[{\"Foo\": 10}, {\"Foo\": 11}]"
-
-#box_json <- "[{\"\"height\"\":295,\"\"label\"\":\"\"Car\"\",\"\"left\"\":1094,\"\"top\"\":1017,\"\"width\"\":326},{\"\"height\"\":243,\"\"label\"\":\"\"Car\"\",\"\"left\"\":641,\"\"top\"\":1064,\"\"width\"\":363},{\"\"height\"\":132,\"\"label\"\":\"\"Car\"\",\"\"left\"\":604,\"\"top\"\":1001,\"\"width\"\":200},{\"\"height\"\":164,\"\"label\"\":\"\"Car\"\",\"\"left\"\":430,\"\"top\"\":990,\"\"width\"\":190},{\"\"height\"\":195,\"\"label\"\":\"\"Car\"\",\"\"left\"\":204,\"\"top\"\":990,\"\"width\"\":231}]"
-
-box_json <- gsub("\"\"", "\"", box_json)
-
-result <- fromJSON(box_json)
-print(result)
-```
-
-
-```{r}
-foo_dt <- data.table(
-  'foo' = c(c(1,2,3,4,5), c(1,2,3,4,5))
-)
-
-foo_dt[, bar := 'repeat']
-
-print(foo_dt)
-
-```
 
