@@ -20,7 +20,7 @@ library(rjson)
 
 ```{r}
 # Read the results from Mechanical Turk
-mturk_results_dt <- fread("../data/sample_mturk_output.csv")
+mturk_results_dt <- fread("../data/sample_openimages_output1.csv")
 head(mturk_results_dt)
 ```
 
@@ -45,6 +45,11 @@ convert_mturk_bounding <- function(mturk_bounding_boxes) {
   mturk_bounding_boxes <- gsub("\"\"", "\"", mturk_bounding_boxes)
   bounding_boxes_list <- fromJSON(mturk_bounding_boxes)
   
+  if (length(bounding_boxes_list) < 1) {
+    print("No rows")
+    return(NULL)
+  }
+    
   top_results_list <- c()
   bottom_results_list <- c()
   right_results_list <- c()
@@ -80,8 +85,12 @@ extract_image_bounding_data <- function(dt) {
   
   for (i in 1:nrow(dt)) {
     row <- dt[i, ]
-    
+
     bounding_boxes_dt <- convert_mturk_bounding(row[, Answer.annotatedResult.boundingBoxes])
+    
+    if (is.null(bounding_boxes_dt)) {
+      next
+    }
     
     # Add attributes for the HIT to bounding boxes
     bounding_boxes_dt[, HITId := row[, HITId]]
