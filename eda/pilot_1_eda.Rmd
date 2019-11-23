@@ -1,0 +1,39 @@
+---
+title: "Team mTurk - Image Bounding Scoring"
+output: 
+    github_document: default
+    pdf_document: default
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(
+    inputFile, encoding = encoding,
+    output_format ='github_document')
+    })
+  
+---
+
+```{r setup, include=FALSE}
+library(data.table)
+library(dplyr)
+library(rjson)
+#library(knitr)
+```
+
+```{r}
+# Read in the correct bounding cooridinates
+pilot_d <- fread("../data/pilot1_results.csv")
+head(pilot_d)
+```
+
+```{r}
+pilot_d[, mean(bounding_box_score), keyby=WorkerId]
+```
+
+```{r}
+pilot_d[in_treatment == 1, mean(bounding_box_score)]
+pilot_d[in_treatment == 1, mean(bounding_box_score)]
+
+mod <- pilot_d[, lm(bounding_box_score ~ in_treatment)]
+summary(mod)
+```
+
+

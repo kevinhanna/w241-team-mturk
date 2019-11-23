@@ -21,7 +21,19 @@ library(rjson)
 ```{r}
 # Read the results from Mechanical Turk
 #mturk_results_dt <- fread("../data/sample_openimages_output1.csv")
-mturk_results_dt <- fread("../data/Batch_3843733_batch_results.csv")
+
+get_result_data <- function() {
+  control <- fread("../data/Batch_3846852_batch_results_reg.csv")
+  control[, in_treatment := 0]
+  
+  treatment <- fread("../data/Batch_3846847_batch_results_gov.csv")
+  treatment[, in_treatment := 1]
+  
+  return(rbind(control, treatment))
+}
+
+mturk_results_dt <- get_result_data()
+#mturk_results_dt <- fread("../data/Batch_3843733_batch_results.csv")
 
 head(mturk_results_dt)
 ```
@@ -111,6 +123,7 @@ extract_image_bounding_data <- function(dt) {
     bounding_boxes_dt[, Last30DaysApprovalRate := row[, Last30DaysApprovalRate]]
     bounding_boxes_dt[, Last7DaysApprovalRate := row[, Last7DaysApprovalRate]]
     bounding_boxes_dt[, ImageId := row[, Input.image_url]] # Column renamed
+    bounding_boxes_dt[, in_treatment := row[, in_treatment]]
     
     #bounding_boxes_dt[, bounding_box_score := -0.111]
     
@@ -144,8 +157,8 @@ formatted_mturk_image_boundings_dt <- extract_image_bounding_data(mturk_results_
 
 score_mturk_results <- function() {
   
-  scoring_results = c()
-  
+  score_results = c()
+
   # Iterate through the turker results
   for (i in 1:nrow(formatted_mturk_image_boundings_dt)) {
     
@@ -155,27 +168,30 @@ score_mturk_results <- function() {
     # Find the correct bounding
     matched_images_dt <- image_coords_dt[ImageId == formatted_mturk_image_boundings_row[, ImageId], ]
 
-    if (nrow(matched_images_dt) > 1) {
-      #cat("Too many matched images for: (", nrow(matched_images_dt), ")", print(row[, ImageId]))
-    }
-
     bounding_box_score <- score_bounding_box(matched_images_dt[, ], formatted_mturk_image_boundings_row[, ])
-    scoring_results <- c(scoring_results, bounding_box_score)
+    score_results <- c(score_results, bounding_box_score)
     
-    }
-    
-  scoring_results
+  }
+  score_results
 }
 
-mturk_results_dt[, bounding_box_score := score_mturk_results()]
-setorder(mturk_results_dt, WorkerId)
+#mturk_results_dt[, bounding_box_score := score_mturk_results()]
 
-print(mturk_results_dt[, c("HITId", "bounding_box_score", "WorkerId")])
+formatted_mturk_image_boundings_dt[, bounding_box_score := score_mturk_results()]
+
+#setorder(formatted_mturk_image_boundings_dt, WorkerId)
+
+print(formatted_mturk_image_boundings_dt[, c("HITId", "bounding_box_score", "WorkerId")])
 
 
 ```
 
 ```{r}
-fwrite(mturk_results_dt, "../data/pilot1_results.csv")
+fwrite(formatted_mturk_image_boundings_dt, "../data/pilot1_results.csv")
+```
+
+```{r}
+foo <- c(c(1,2), c(3,4))
+foo
 ```
 
