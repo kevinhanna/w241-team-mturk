@@ -20,7 +20,9 @@ library(rjson)
 
 ```{r}
 # Read the results from Mechanical Turk
-mturk_results_dt <- fread("../data/sample_openimages_output1.csv")
+#mturk_results_dt <- fread("../data/sample_openimages_output1.csv")
+mturk_results_dt <- fread("../data/Batch_3843733_batch_results.csv")
+
 head(mturk_results_dt)
 ```
 
@@ -166,10 +168,14 @@ score_mturk_results <- function() {
 }
 
 mturk_results_dt[, bounding_box_score := score_mturk_results()]
+setorder(mturk_results_dt, WorkerId)
 
-print(mturk_results_dt[, c("HITId", "bounding_box_score")])
+print(mturk_results_dt[, c("HITId", "bounding_box_score", "WorkerId")])
 
 
 ```
 
+```{r}
+fwrite(mturk_results_dt, "../data/pilot1_results.csv")
+```
 

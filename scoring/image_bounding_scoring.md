@@ -3,10 +3,11 @@ Team mTurk - Image Bounding Scoring
 
 ``` r
 # Read the results from Mechanical Turk
-mturk_results_dt <- fread("../data/sample_openimages_output1.csv")
+#mturk_results_dt <- fread("../data/sample_openimages_output1.csv")
+mturk_results_dt <- fread("../data/Batch_3843733_batch_results.csv")
 ```
 
-    ## Warning in fread("../data/sample_openimages_output1.csv"): Detected 33
+    ## Warning in fread("../data/Batch_3843733_batch_results.csv"): Detected 33
     ## column names but the data has 31 columns. Filling rows automatically. Set
     ## fill=TRUE explicitly to avoid this warning.
 
@@ -15,40 +16,40 @@ head(mturk_results_dt)
 ```
 
     ##                             HITId                      HITTypeId
-    ## 1: 3VQTAXTYN2KS3D99CPGNXHGZ46ABU5 3FRA5KKDL2PKKZUTPDY1K7J8LL529P
-    ## 2: 36AZSFEYZ3ZSGSY9HFQST3IIIDJBVU 3FRA5KKDL2PKKZUTPDY1K7J8LL529P
-    ## 3: 3GS542CVJUMSU54XD4UJYZTTHPE95B 3FRA5KKDL2PKKZUTPDY1K7J8LL529P
-    ## 4: 367O8HRHKF7S31WW85B0A2S59H84SC 3FRA5KKDL2PKKZUTPDY1K7J8LL529P
-    ## 5: 3A9LA2FRWRDUBU6QHM163ZI1T1VXHY 3FRA5KKDL2PKKZUTPDY1K7J8LL529P
-    ## 6: 38B7Q9C28F4OD94BIN4OQ57TDKP96R 3FRA5KKDL2PKKZUTPDY1K7J8LL529P
-    ##                                               Title
-    ## 1: Draw bounding boxes around the requested item(s)
-    ## 2: Draw bounding boxes around the requested item(s)
-    ## 3: Draw bounding boxes around the requested item(s)
-    ## 4: Draw bounding boxes around the requested item(s)
-    ## 5: Draw bounding boxes around the requested item(s)
-    ## 6: Draw bounding boxes around the requested item(s)
+    ## 1: 39AYGO6AGI2TPA6ST51KNNG1GMS6NB 3DQQATL6OWW6LD057T0U6XSV9BS4IA
+    ## 2: 39AYGO6AGI2TPA6ST51KNNG1GMS6NB 3DQQATL6OWW6LD057T0U6XSV9BS4IA
+    ## 3: 39AYGO6AGI2TPA6ST51KNNG1GMS6NB 3DQQATL6OWW6LD057T0U6XSV9BS4IA
+    ## 4: 39AYGO6AGI2TPA6ST51KNNG1GMS6NB 3DQQATL6OWW6LD057T0U6XSV9BS4IA
+    ## 5: 39AYGO6AGI2TPA6ST51KNNG1GMS6NB 3DQQATL6OWW6LD057T0U6XSV9BS4IA
+    ## 6: 32TMVRKDHQGU7GFA4FJM8S6SV0N480 3DQQATL6OWW6LD057T0U6XSV9BS4IA
+    ##                                                                    Title
+    ## 1: Est 2-to-3 minute job for 35 cents: Draw bounding box around 20 items
+    ## 2: Est 2-to-3 minute job for 35 cents: Draw bounding box around 20 items
+    ## 3: Est 2-to-3 minute job for 35 cents: Draw bounding box around 20 items
+    ## 4: Est 2-to-3 minute job for 35 cents: Draw bounding box around 20 items
+    ## 5: Est 2-to-3 minute job for 35 cents: Draw bounding box around 20 items
+    ## 6: Est 2-to-3 minute job for 35 cents: Draw bounding box around 20 items
     ##                                         Description     Keywords Reward
-    ## 1: Draw bounding boxes around the requested item(s) bounding box  $0.03
-    ## 2: Draw bounding boxes around the requested item(s) bounding box  $0.03
-    ## 3: Draw bounding boxes around the requested item(s) bounding box  $0.03
-    ## 4: Draw bounding boxes around the requested item(s) bounding box  $0.03
-    ## 5: Draw bounding boxes around the requested item(s) bounding box  $0.03
-    ## 6: Draw bounding boxes around the requested item(s) bounding box  $0.03
+    ## 1: Draw bounding boxes around the requested item(s) bounding box  $0.02
+    ## 2: Draw bounding boxes around the requested item(s) bounding box  $0.02
+    ## 3: Draw bounding boxes around the requested item(s) bounding box  $0.02
+    ## 4: Draw bounding boxes around the requested item(s) bounding box  $0.02
+    ## 5: Draw bounding boxes around the requested item(s) bounding box  $0.02
+    ## 6: Draw bounding boxes around the requested item(s) bounding box  $0.02
     ##                    CreationTime MaxAssignments
-    ## 1: Wed Nov 13 13:49:47 PST 2019              3
-    ## 2: Wed Nov 13 13:49:47 PST 2019              3
-    ## 3: Wed Nov 13 13:49:47 PST 2019              3
-    ## 4: Wed Nov 13 13:49:47 PST 2019              3
-    ## 5: Wed Nov 13 13:49:47 PST 2019              3
-    ## 6: Wed Nov 13 13:49:47 PST 2019              3
-    ##                                RequesterAnnotation
-    ## 1: BatchId:258419;OriginalHitTemplateId:921587256;
-    ## 2: BatchId:258419;OriginalHitTemplateId:921587256;
-    ## 3: BatchId:258419;OriginalHitTemplateId:921587256;
-    ## 4: BatchId:258419;OriginalHitTemplateId:921587256;
-    ## 5: BatchId:258419;OriginalHitTemplateId:921587256;
-    ## 6: BatchId:258419;OriginalHitTemplateId:921587256;
+    ## 1: Wed Nov 20 21:03:26 PST 2019             25
+    ## 2: Wed Nov 20 21:03:26 PST 2019             25
+    ## 3: Wed Nov 20 21:03:26 PST 2019             25
+    ## 4: Wed Nov 20 21:03:26 PST 2019             25
+    ## 5: Wed Nov 20 21:03:26 PST 2019             25
+    ## 6: Wed Nov 20 21:03:26 PST 2019             25
+    ##                                 RequesterAnnotation
+    ## 1: BatchId:3843733;OriginalHitTemplateId:928390838;
+    ## 2: BatchId:3843733;OriginalHitTemplateId:928390838;
+    ## 3: BatchId:3843733;OriginalHitTemplateId:928390838;
+    ## 4: BatchId:3843733;OriginalHitTemplateId:928390838;
+    ## 5: BatchId:3843733;OriginalHitTemplateId:928390838;
+    ## 6: BatchId:3843733;OriginalHitTemplateId:928390838;
     ##    AssignmentDurationInSeconds AutoApprovalDelayInSeconds
     ## 1:                        3600                     259200
     ## 2:                        3600                     259200
@@ -57,68 +58,68 @@ head(mturk_results_dt)
     ## 5:                        3600                     259200
     ## 6:                        3600                     259200
     ##                      Expiration NumberOfSimilarHITs LifetimeInSeconds
-    ## 1: Wed Nov 20 13:49:47 PST 2019                  NA                NA
-    ## 2: Wed Nov 20 13:49:47 PST 2019                  NA                NA
-    ## 3: Wed Nov 20 13:49:47 PST 2019                  NA                NA
-    ## 4: Wed Nov 20 13:49:47 PST 2019                  NA                NA
-    ## 5: Wed Nov 20 13:49:47 PST 2019                  NA                NA
-    ## 6: Wed Nov 20 13:49:47 PST 2019                  NA                NA
+    ## 1: Sat Nov 23 21:03:26 PST 2019                  NA                NA
+    ## 2: Sat Nov 23 21:03:26 PST 2019                  NA                NA
+    ## 3: Sat Nov 23 21:03:26 PST 2019                  NA                NA
+    ## 4: Sat Nov 23 21:03:26 PST 2019                  NA                NA
+    ## 5: Sat Nov 23 21:03:26 PST 2019                  NA                NA
+    ## 6: Sat Nov 23 21:03:26 PST 2019                  NA                NA
     ##                      AssignmentId       WorkerId AssignmentStatus
-    ## 1: 3ND9UOO81K1KUAIKO4PJHSSH671WL1 A3MMXRCOC1C30K        Submitted
-    ## 2: 37Q970SNZE7EXMX7BPXZ0OGI2O0S1C A3MMXRCOC1C30K        Submitted
-    ## 3: 3TAYZSBPLL7LM7F3UTXD57QNUUES2T A3MMXRCOC1C30K        Submitted
-    ## 4: 3S4AW7T80BH8L8Z0EYJ0M09QME2L44 A3MMXRCOC1C30K        Submitted
-    ## 5: 34PGFRQONOAEZKUKLJD61DFP2IWWJZ A3MMXRCOC1C30K        Submitted
-    ## 6: 36NEMU28XFC40S05OGQYH5766CRWM3 A3MMXRCOC1C30K        Submitted
+    ## 1: 38SKSKU7R5FLGEW19VZWWIX6P70ILR A32318S1SI98GV        Submitted
+    ## 2: 39LOEL67OWNBB4UZU3J5N79BMOT83I A2JKM9ZTUWHVPF        Submitted
+    ## 3: 3AMYWKA6YF4DTF4XKM6ZRWBVBKZO67  A6381MY3CURAX        Submitted
+    ## 4: 3EJJQNKU9VNWNHGU8XE7II5QVPYRHR  A9E9L9MWEZOPN        Submitted
+    ## 5: 3TE3O85734QS8RDCPCB0VEZO62HR22 A2HUTXBZ4YCVYT        Submitted
+    ## 6: 39DD6S19JTTT5YBJSD0EJIACCN0EZW A32318S1SI98GV        Submitted
     ##                      AcceptTime                   SubmitTime
-    ## 1: Wed Nov 13 13:52:02 PST 2019 Wed Nov 13 13:52:07 PST 2019
-    ## 2: Wed Nov 13 13:52:10 PST 2019 Wed Nov 13 13:52:22 PST 2019
-    ## 3: Wed Nov 13 13:52:33 PST 2019 Wed Nov 13 13:52:41 PST 2019
-    ## 4: Wed Nov 13 13:50:39 PST 2019 Wed Nov 13 13:50:58 PST 2019
-    ## 5: Wed Nov 13 13:51:15 PST 2019 Wed Nov 13 13:51:29 PST 2019
-    ## 6: Wed Nov 13 13:52:22 PST 2019 Wed Nov 13 13:52:32 PST 2019
+    ## 1: Thu Nov 21 00:23:33 PST 2019 Thu Nov 21 00:24:22 PST 2019
+    ## 2: Wed Nov 20 21:11:42 PST 2019 Wed Nov 20 21:11:56 PST 2019
+    ## 3: Wed Nov 20 21:16:18 PST 2019 Wed Nov 20 21:34:34 PST 2019
+    ## 4: Thu Nov 21 17:11:02 PST 2019 Thu Nov 21 17:11:16 PST 2019
+    ## 5: Wed Nov 20 21:19:35 PST 2019 Wed Nov 20 21:39:47 PST 2019
+    ## 6: Thu Nov 21 00:02:56 PST 2019 Thu Nov 21 00:04:07 PST 2019
     ##                AutoApprovalTime ApprovalTime RejectionTime
-    ## 1: Sat Nov 16 13:52:07 PST 2019           NA            NA
-    ## 2: Sat Nov 16 13:52:22 PST 2019           NA            NA
-    ## 3: Sat Nov 16 13:52:41 PST 2019           NA            NA
-    ## 4: Sat Nov 16 13:50:58 PST 2019           NA            NA
-    ## 5: Sat Nov 16 13:51:29 PST 2019           NA            NA
-    ## 6: Sat Nov 16 13:52:32 PST 2019           NA            NA
+    ## 1: Sun Nov 24 00:24:22 PST 2019           NA            NA
+    ## 2: Sat Nov 23 21:11:56 PST 2019           NA            NA
+    ## 3: Sat Nov 23 21:34:34 PST 2019           NA            NA
+    ## 4: Sun Nov 24 17:11:16 PST 2019           NA            NA
+    ## 5: Sat Nov 23 21:39:47 PST 2019           NA            NA
+    ## 6: Sun Nov 24 00:04:07 PST 2019           NA            NA
     ##    RequesterFeedback WorkTimeInSeconds LifetimeApprovalRate
-    ## 1:                NA                 5           100% (3/3)
-    ## 2:                NA                12           100% (3/3)
-    ## 3:                NA                 8           100% (3/3)
-    ## 4:                NA                19           100% (3/3)
-    ## 5:                NA                14           100% (3/3)
-    ## 6:                NA                10           100% (3/3)
+    ## 1:                NA                49           100% (1/1)
+    ## 2:                NA                14           100% (1/1)
+    ## 3:                NA              1096           100% (1/1)
+    ## 4:                NA                14           100% (1/1)
+    ## 5:                NA              1212           100% (1/1)
+    ## 6:                NA                71           100% (1/1)
     ##    Last30DaysApprovalRate Last7DaysApprovalRate
-    ## 1:             100% (3/3)              0% (0/0)
-    ## 2:             100% (3/3)              0% (0/0)
-    ## 3:             100% (3/3)              0% (0/0)
-    ## 4:             100% (3/3)              0% (0/0)
-    ## 5:             100% (3/3)              0% (0/0)
-    ## 6:             100% (3/3)              0% (0/0)
+    ## 1:             100% (1/1)            100% (1/1)
+    ## 2:             100% (1/1)            100% (1/1)
+    ## 3:             100% (1/1)            100% (1/1)
+    ## 4:             100% (1/1)            100% (1/1)
+    ## 5:             100% (1/1)            100% (1/1)
+    ## 6:             100% (1/1)            100% (1/1)
     ##                                                                      Input.image_url
     ## 1: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/1002f337f91b7932.jpg
-    ## 2: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/101fa29afd6608fc.jpg
-    ## 3: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/10496f2878b93ee9.jpg
-    ## 4: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/108eeb6df9f6b036.jpg
-    ## 5: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/10a170e703878553.jpg
-    ## 6: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/10e57672e496cc18.jpg
+    ## 2: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/1002f337f91b7932.jpg
+    ## 3: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/1002f337f91b7932.jpg
+    ## 4: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/1002f337f91b7932.jpg
+    ## 5: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/1002f337f91b7932.jpg
+    ## 6: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/101fa29afd6608fc.jpg
     ##                                           Answer.annotatedResult.boundingBoxes
-    ## 1:                                                                          []
-    ## 2:  [{""height"":72,""label"":""Car"",""left"":856,""top"":391,""width"":164}]
-    ## 3: [{""height"":265,""label"":""Car"",""left"":117,""top"":315,""width"":746}]
-    ## 4: [{""height"":178,""label"":""Car"",""left"":535,""top"":388,""width"":448}]
-    ## 5: [{""height"":189,""label"":""Car"",""left"":293,""top"":326,""width"":378}]
-    ## 6:  [{""height"":62,""label"":""Car"",""left"":319,""top"":409,""width"":118}]
+    ## 1: [{""height"":204,""label"":""Car"",""left"":366,""top"":458,""width"":161}]
+    ## 2: [{""height"":248,""label"":""Car"",""left"":341,""top"":425,""width"":221}]
+    ## 3: [{""height"":193,""label"":""Car"",""left"":356,""top"":452,""width"":187}]
+    ## 4: [{""height"":206,""label"":""Car"",""left"":362,""top"":443,""width"":163}]
+    ## 5: [{""height"":200,""label"":""Car"",""left"":376,""top"":458,""width"":137}]
+    ## 6:  [{""height"":73,""label"":""Car"",""left"":850,""top"":393,""width"":174}]
     ##    Answer.annotatedResult.inputImageProperties.height
     ## 1:                                               1024
-    ## 2:                                                576
-    ## 3:                                                768
-    ## 4:                                                740
-    ## 5:                                                671
-    ## 6:                                                680
+    ## 2:                                               1024
+    ## 3:                                               1024
+    ## 4:                                               1024
+    ## 5:                                               1024
+    ## 6:                                                576
     ##    Answer.annotatedResult.inputImageProperties.width Approve Reject
     ## 1:                                              1024      NA     NA
     ## 2:                                              1024      NA     NA
@@ -140,13 +141,13 @@ head(image_coords_dt)
     ## 4: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/108eeb6df9f6b036.jpg
     ## 5: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/10a170e703878553.jpg
     ## 6: https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/10e57672e496cc18.jpg
-    ##         top   bottom      left    right
-    ## 1: 200.0000 400.0000 300.00000 500.0000
-    ## 2: 329.2612 390.1553 723.84125 851.1337
-    ## 3: 264.1915 487.9460  95.46937 721.1444
-    ## 4:  10.0000  20.0000  10.00000  20.0000
-    ## 5:  10.0000  20.0000  10.00000  20.0000
-    ## 6:  10.0000  20.0000  10.00000  20.0000
+    ##         top   bottom     left     right
+    ## 1: 383.9058 570.9375 319.2192  473.9067
+    ## 2: 391.0401 463.3597 858.8800 1009.9200
+    ## 3: 313.5997 579.2003 113.2800  855.6800
+    ## 4: 381.3960 560.6980 534.7891  981.4600
+    ## 5: 338.7013 509.0125 306.5600  667.5200
+    ## 6: 398.0020 471.0652 328.3200  424.3200
 
 ``` r
 convert_mturk_bounding <- function(mturk_bounding_boxes) {
@@ -256,11 +257,7 @@ score_bounding_box <- function(true_coords, turker_coords) {
 ``` r
 # Prepare the mturk results
 formatted_mturk_image_boundings_dt <- extract_image_bounding_data(mturk_results_dt)
-```
 
-    ## [1] "No rows"
-
-``` r
 score_mturk_results <- function() {
   
   scoring_results = c()
@@ -287,16 +284,31 @@ score_mturk_results <- function() {
 }
 
 mturk_results_dt[, bounding_box_score := score_mturk_results()]
-
-print(mturk_results_dt[, c("HITId", "bounding_box_score")])
 ```
 
-    ##                             HITId bounding_box_score
-    ## 1: 3VQTAXTYN2KS3D99CPGNXHGZ46ABU5                 NA
-    ## 2: 36AZSFEYZ3ZSGSY9HFQST3IIIDJBVU           330.8682
-    ## 3: 3GS542CVJUMSU54XD4UJYZTTHPE95B           246.2046
-    ## 4: 367O8HRHKF7S31WW85B0A2S59H84SC          1791.9873
-    ## 5: 3A9LA2FRWRDUBU6QHM163ZI1T1VXHY          1293.8292
-    ## 6: 38B7Q9C28F4OD94BIN4OQ57TDKP96R          1123.8405
-    ## 7: 3KI0JD2ZU0HKZQGI3Q64C9GNIU176D          1250.9463
-    ## 8: 322ZSN9Z5FJTI19BX5GQK7ORB0M4T1          1879.8637
+    ## Warning in `[.data.table`(mturk_results_dt, , `:=`(bounding_box_score,
+    ## score_mturk_results())): Supplied 116 items to be assigned to 115 items of
+    ## column 'bounding_box_score' (1 unused)
+
+``` r
+setorder(mturk_results_dt, WorkerId)
+
+print(mturk_results_dt[, c("HITId", "bounding_box_score", "WorkerId")])
+```
+
+    ##                               HITId bounding_box_score       WorkerId
+    ##   1: 39AYGO6AGI2TPA6ST51KNNG1GMS6NB          189.30560 A2HUTXBZ4YCVYT
+    ##   2: 32TMVRKDHQGU7GFA4FJM8S6SV0N480           20.71133 A2HUTXBZ4YCVYT
+    ##   3: 3W3RSPVVHV9O3LT8DAJ8Q1QSED9ULY           17.92858 A2HUTXBZ4YCVYT
+    ##   4: 3SMIWMMK74N4EF57HOQAZC78CKDWUT         1020.61403 A2HUTXBZ4YCVYT
+    ##   5: 3O0M2G5VD9KULLYK97P08O13F6549P           27.96188 A2HUTXBZ4YCVYT
+    ##  ---                                                                 
+    ## 111: 3PIOQ99R814ERLWTPNZN3TUHJ89UN0           55.12650  A9E9L9MWEZOPN
+    ## 112: 3ZLW647WBODY35UHOK52OW1JV0Z23A           36.85807  A9E9L9MWEZOPN
+    ## 113: 3V7ICJJA0DYD9EDH7R3WZUWT3684BZ          994.48915  A9E9L9MWEZOPN
+    ## 114: 3O0M2G5VD9KULLYK97P08O13F6549P           11.31961   ALJNN2WJURB3
+    ## 115: 3B623HUYK78D91HLUGF46VMY9GPS8U           15.93497   ALJNN2WJURB3
+
+``` r
+fwrite(mturk_results_dt, "../data/pilot1_results.csv")
+```
