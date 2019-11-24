@@ -1,0 +1,59 @@
+
+<html>
+<head>
+<title>Bounding box annotator demo</title>
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.js"></script>
+<script src="/static/scripts/bbox_annotator.js"></script>
+</head>
+<body>
+
+<h1>Help evil people do evil</h1>
+<div id="bbox_annotator" style="display:inline-block"></div>
+<div style="display:inline-block;vertical-align:top;">
+  <div>
+    <span>Input method: </span>
+    <a href="?input=text">text</a> |
+    <a href="?input=select">select</a> |
+    <a href="?input=fixed">fixed</a>
+  </div>
+  <div>
+    <textarea id="annotation_data" name="annotation" rows="30" cols="50" style="font-family:monospace;" readonly></textarea>
+  </div>
+  <div>
+    <input id="reset_button" type="reset" />
+  </div>
+</div>
+
+<script type="text/javascript">
+function getParameterByName(name) {
+  var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+  return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+$(document).ready(function() {
+  // Can be one of ['text', 'select', 'fixed']
+  var inputMethod = getParameterByName("input");
+  // Initialize the bounding-box annotator.
+  var annotator = new BBoxAnnotator({
+    url: "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/116257e7260fdb51.jpg",
+    input_method: inputMethod || "fixed",
+    labels: ["car", "dress", "eyeglasses"],
+    onchange: function(entries) {
+      // Input the text area on change. Use "hidden" input tag unless debugging.
+      // <input id="annotation_data" name="annotation_data" type="hidden" />
+      // $("#annotation_data").val(JSON.stringify(entries))
+      $("#annotation_data").text(JSON.stringify(entries, null, "  "));
+    }
+  });
+  // Initialize the reset button.
+  $("#reset_button").click(function(e) {
+    annotator.clear_all();
+  })
+
+  alert(annotator.image_frame)
+});
+</script>
+
+</body>
+</html>
