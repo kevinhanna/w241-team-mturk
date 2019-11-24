@@ -20,7 +20,13 @@ library(rjson)
 
 ```{r}
 # Read in the correct bounding cooridinates
-pilot_d <- fread("../data/pilot1_results.csv")
+pilot_d <- fread("../data/pilot_1/pilot1_results.csv")
+
+# Remove bad image where bounding box not available
+pilot_d <- pilot_d[ImageId != "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/104b3a47edc67285.jpg",]
+pilot_d <- pilot_d[ImageId != "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/1002f337f91b7932.jpg",]
+
+
 head(pilot_d)
 ```
 
@@ -29,11 +35,44 @@ pilot_d[, mean(bounding_box_score), keyby=WorkerId]
 ```
 
 ```{r}
-pilot_d[in_treatment == 1, mean(bounding_box_score)]
-pilot_d[in_treatment == 1, mean(bounding_box_score)]
+pilot_d[, mean(bounding_box_score, na.rm=T), keyby=in_treatment]
 
 mod <- pilot_d[, lm(bounding_box_score ~ in_treatment)]
 summary(mod)
+
+t.test(pilot_d[in_treatment == 1, bounding_box_score], pilot_d[in_treatment == 0, bounding_box_score])
+
+```
+
+```{r}
+mod <- pilot_d[, lm(bounding_box_score ~ WorkTimeInSeconds)]
+summary(mod)
+```
+
+```{r}
+pilot_d[, mean(WorkTimeInSeconds, na.rm=T), keyby=in_treatment]
+
+mod <- pilot_d[, lm(WorkTimeInSeconds ~ in_treatment)]
+summary(mod)
+
+```
+
+```{r}
+pilot_d[, mean(WorkTimeInSeconds)]
 ```
 
 
+
+```{r}
+pilot_d[, .N, keyby=WorkerId]
+```
+
+```{r}
+
+pilot_d[, sum(in_treatment)]
+```
+
+```{r}
+
+pilot_d[, mean(bounding_box_score), keyby=ImageId]
+```
