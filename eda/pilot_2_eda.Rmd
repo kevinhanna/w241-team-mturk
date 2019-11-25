@@ -95,7 +95,7 @@ pilot_d[, mean(bounding_box_score), keyby=ImageId]
 
 
 ```{r}
-
+pilot_d[, .N, keyby=WorkerId]
 
 ```
 
