@@ -3,7 +3,7 @@ Team mTurk - Image Bounding Scoring
 
 ``` r
 # Read in the correct bounding cooridinates
-pilot_d <- fread("../data/pilot_1/pilot1_results.csv")
+pilot_d <- fread("../data/pilot_2/pilot2_results.csv")
 
 # Remove bad image where bounding box not available
 pilot_d <- pilot_d[ImageId != "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/104b3a47edc67285.jpg",]
@@ -67,7 +67,7 @@ worker_mean_score <- pilot_d[, .(score = mean(bounding_box_score), log_score = m
 worker_mean_score[, plot(score, col=(in_treatment+1))]
 ```
 
-![](pilot_1_eda_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+![](pilot_2_eda_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
     ## NULL
 
@@ -75,7 +75,7 @@ worker_mean_score[, plot(score, col=(in_treatment+1))]
 worker_mean_score[, plot(log_score, col=c("black", "red")[in_treatment+1])]
 ```
 
-![](pilot_1_eda_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
+![](pilot_2_eda_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
 
     ## NULL
 
