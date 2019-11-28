@@ -20,7 +20,7 @@ library(rjson)
 
 ```{r}
 # Read in the correct bounding cooridinates
-pilot_d <- fread("../data/pilot_2/pilot2_results.csv")
+pilot_d <- fread("../data/experiment_1/experiment_1_results.csv")
 
 # Remove bad image where bounding box not available
 pilot_d <- pilot_d[ImageId != "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/104b3a47edc67285.jpg",]

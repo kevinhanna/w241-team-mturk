@@ -34,16 +34,31 @@ get_result_data_pilot_1 <- function() {
 
 
 get_result_data_pilot_2 <- function() {
-  control <- fread("../data/pilot_1/Batch_3847172_batch_results_reg.csv")
+  control <- fread("../data/pilot_2/Batch_3847172_batch_results_reg.csv")
   control[, in_treatment := 0]
   
-  treatment <- fread("../data/pilot_1/Batch_3847422_batch_results_gov.csv")
+  treatment <- fread("../data/pilot_2/Batch_3847422_batch_results_gov.csv")
   treatment[, in_treatment := 1]
   
   return(rbind(control, treatment))
 }
 
-mturk_results_dt <- get_result_data_pilot_1()
+get_result_data_experiment_1 <- function() {
+  control <- fread("../data/experiment_1/Batch_3849139_batch_results_norelationship.csv")
+  control[, in_treatment := 0]
+  
+  treatment <- fread("../data/experiment_1/Batch_3849192_batch_results_relationship.csv")
+  treatment[, in_treatment := 1]
+  
+  results <- rbind(control, treatment)
+  
+  results[, Input.image_url := "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/116257e7260fdb51.jpg"]
+  return(results)
+  
+  
+}
+
+mturk_results_dt <- get_result_data_experiment_1()
 
 head(mturk_results_dt)
 
@@ -216,7 +231,8 @@ print(formatted_mturk_image_boundings_dt[, c("HITId", "bounding_box_score", "Wor
 ```
 
 ```{r}
-fwrite(formatted_mturk_image_boundings_dt, "../data/pilot_2/pilot2_results.csv")
+#fwrite(formatted_mturk_image_boundings_dt, "../data/pilot_1/pilot1_results.csv")
+fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_1/experiment_1_results.csv")
 ```
 
 
