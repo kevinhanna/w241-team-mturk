@@ -15,12 +15,10 @@ knit: (function(inputFile, encoding) {
 library(data.table)
 library(dplyr)
 library(rjson)
-#library(knitr)
 ```
 
 ```{r}
 # Read the results from Mechanical Turk
-#mturk_results_dt <- fread("../data/sample_openimages_output1.csv")
 
 get_result_data_pilot_1 <- function() {
   control <- fread("../data/pilot_1/Batch_3846852_batch_results_reg.csv")
@@ -51,6 +49,26 @@ get_result_data_experiment_1 <- function() {
   treatment[, in_treatment := 1]
   
   results <- rbind(control, treatment)
+
+  results[, experiment_no := 1]
+    
+  results[, Input.image_url := "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/116257e7260fdb51.jpg"]
+  return(results)
+  
+  
+}
+
+
+get_result_data_experiment_2 <- function() {
+  control <- fread("../data/experiment_2/Batch_3851700_batch_results_norelationship.csv")
+  control[, in_treatment := 0]
+  
+  treatment <- fread("../data/experiment_2/Batch_3851648_batch_results_relationship.csv")
+  treatment[, in_treatment := 1]
+  
+  results <- rbind(control, treatment)
+
+  results[, experiment_no := 2]
   
   results[, Input.image_url := "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/116257e7260fdb51.jpg"]
   return(results)
@@ -58,21 +76,26 @@ get_result_data_experiment_1 <- function() {
   
 }
 
-mturk_results_dt <- get_result_data_experiment_1()
+get_result_data_all_experiments <- function() {
+  mturk_results_dt_1 <- get_result_data_experiment_1()
+  mturk_results_dt_2 <- get_result_data_experiment_2()
+  
+  rbind(mturk_results_dt_1, mturk_results_dt_2)
+}
+
+mturk_results_dt <- get_result_data_all_experiments()
 
 head(mturk_results_dt)
 
-mturk_results_dt[, sum(in_treatment)]
-
 ```
+
+
+
 
 ```{r}
 # Read in the correct bounding cooridinates
 image_coords_dt <- fread("../data/image_coords.csv")
-
 image_coords_dt[, bound_size := (bottom-top)*(right-left)]
-
-head(image_coords_dt)
 ```
 
 ```{r}
@@ -154,6 +177,47 @@ extract_image_bounding_data <- function(dt) {
     bounding_boxes_dt[, Last30DaysApprovalRate := row[, Last30DaysApprovalRate]]
     bounding_boxes_dt[, Last7DaysApprovalRate := row[, Last7DaysApprovalRate]]
     bounding_boxes_dt[, WorkTimeInSeconds := row[, WorkTimeInSeconds]]
+    
+    
+    bounding_boxes_dt[, cellphone := row[, as.numeric(Answer._2monitor1.cellphone)]]
+    bounding_boxes_dt[, tablet := row[, as.numeric(Answer._2monitor2.tablet)]] 
+    bounding_boxes_dt[, smalllaptop := row[, as.numeric(Answer._2monitor3.smalllaptop)]]    
+    bounding_boxes_dt[, midsize := row[, as.numeric(Answer._2monitor4.midsize)]]
+    bounding_boxes_dt[, largescreen := row[, as.numeric(Answer._2monitor5.largescreen)]]    
+    bounding_boxes_dt[, notsure := row[, as.numeric(Answer._2monitor6.notsure)]]
+    
+    
+    
+    bounding_boxes_dt$q01.didbf<-ifelse(row$Answer._1donebf1.yes ==TRUE, "yes", 
+                     ifelse(row$Answer._1donebf2.no == TRUE, "no",
+                     ifelse(row$Answer._1donebf3.dontknow == TRUE, "dontknow","noans")))
+    bounding_boxes_dt$q02.monitor<-  ifelse(row$Answer._2monitor1.cellphone   ==TRUE, "cellphone", 
+                     ifelse(row$Answer._2monitor2.tablet   == TRUE, "tablet",
+                     ifelse(row$Answer._2monitor3.smalllaptop == TRUE, "smalllaptop",
+                     ifelse(row$Answer._2monitor4.midsize == TRUE, "midsize",
+                     ifelse(row$Answer._2monitor5.largescreen == TRUE, "largescreen",
+                     ifelse(row$Answer._2monitor6.notsure == TRUE, "notsure","noans"))))))
+    bounding_boxes_dt$q03.mousetrackpad<-ifelse(row$Answer._3cursor1.mouse == TRUE, "mouse", 
+                     ifelse(row$Answer._3cursor2.trackpad == TRUE, "trackpad",
+                     ifelse(row$Answer._3cursor3.other == TRUE, "other","noans")))
+    bounding_boxes_dt$q04.age<-ifelse(row$Answer._4age1.lt21 ==TRUE, "lt21", 
+            ifelse(row$Answer._4age2.21to30 == TRUE, "21to30",
+            ifelse(row$Answer._4age3.31to30 == TRUE, "31to40", 
+                   #31 to 30 is coded wrong, but no impact
+            ifelse(row$Answer._4age4.41to50 == TRUE, "4150",
+            ifelse(row$Answer._4age5.over50r == TRUE, "over50","noans")))))
+    bounding_boxes_dt$q05.income<-ifelse(row$Answer._5income1.lt10k ==TRUE, "lt10k", 
+               ifelse(row$Answer._5income2.gt10klt30k == TRUE, "10ktolt30k",
+               ifelse(row$Answer._5income3.gt30klt60k == TRUE, "gt30klt60k", 
+               ifelse(row$Answer._5income4.gt60klt90k == TRUE, "gt60klt90k",
+               ifelse(row$Answer._5income5.gt90k == TRUE, "gt90k","noans")))))
+    bounding_boxes_dt$q06.edu<-ifelse(row$Answer._6edu1.lthighschool ==TRUE, "lthighschool", 
+            ifelse(row$Answer._6edu2.highschool == TRUE, "highschool",
+            ifelse(row$Answer._6edu3.somecollege == TRUE, "somecollege", 
+            ifelse(row$Answer._6edu4.fouryearcollege == TRUE, "fouryearcollege",
+            ifelse(row$Answer._6edu5.masterorabove == TRUE, "masterorabove","noans")))))
+    
+
   
     bounding_boxes_dt[, ImageId := row[, Input.image_url]] # Column renamed
     bounding_boxes_dt[, in_treatment := row[, in_treatment]]
@@ -192,14 +256,7 @@ get_bounding_size <- function(ImageIds) {
   return(results)
 }
 
-```
-
-```{r}
-# Prepare the mturk results
-formatted_mturk_image_boundings_dt <- extract_image_bounding_data(mturk_results_dt)
-formatted_mturk_image_boundings_dt[, bound_size := get_bounding_size(ImageId)]
-
-score_mturk_results <- function() {
+score_mturk_results <- function(formatted_mturk_image_boundings_dt, formatted_mturk_image_boundings_row) {
   
   score_results = c()
 
@@ -219,11 +276,14 @@ score_mturk_results <- function() {
   score_results
 }
 
-#mturk_results_dt[, bounding_box_score := score_mturk_results()]
+```
 
-formatted_mturk_image_boundings_dt[, bounding_box_score := score_mturk_results()]
+```{r}
+# Prepare the mturk results
+formatted_mturk_image_boundings_dt <- extract_image_bounding_data(mturk_results_dt)
+formatted_mturk_image_boundings_dt[, bound_size := get_bounding_size(ImageId)]
+formatted_mturk_image_boundings_dt[, bounding_box_score := score_mturk_results(formatted_mturk_image_boundings_dt, formatted_mturk_image_boundings_row)]
 
-#setorder(formatted_mturk_image_boundings_dt, WorkerId)
 
 print(formatted_mturk_image_boundings_dt[, c("HITId", "bounding_box_score", "WorkerId")])
 
@@ -232,7 +292,8 @@ print(formatted_mturk_image_boundings_dt[, c("HITId", "bounding_box_score", "Wor
 
 ```{r}
 #fwrite(formatted_mturk_image_boundings_dt, "../data/pilot_1/pilot1_results.csv")
-fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_1/experiment_1_results.csv")
+#fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_1/experiment_1_results.csv")
+fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_2/experiment_2_results.csv")
 ```
 
 
