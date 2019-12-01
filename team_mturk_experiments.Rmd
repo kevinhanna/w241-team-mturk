@@ -1,0 +1,170 @@
+---
+title: "Team mTurk - Image Bounding Scoring"
+output: 
+    github_document: default
+    pdf_document: default
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(
+    inputFile, encoding = encoding,
+    output_format ='github_document')
+    })
+  
+---
+
+
+Our scoring metric measures the accuracy of the bounding box by calculating the ucledian distance of the Turkers bounds to the correct bounding.
+Therefor a **lower score is better**.  When the treatment should cause a negative reaction, the score should increase if our hypothesis is correct.
+
+```{r setup, include=FALSE}
+library(data.table)
+library(dplyr)
+library(rjson)
+#library(knitr)
+```
+
+```{r}
+# Read in all the data, we'll use the 'experiment_no' to pull the results from each experiment. 
+d <- fread("./data/experiment_all/experiment_results.csv")
+
+```
+
+```{r}
+
+# None of our experiments required creating multiple bounding boxes on a single image.
+# We are assuming the extra bounding boxes are mistakes and taking the better score.
+remove_extra_bounding_boxes <- function(d) {
+  good_scores <- d[,  .(bounding_box_score = min(bounding_box_score), count = .N), keyby=.(WorkerId, ImageId, experiment_no, in_treatment)] %>% .[count<2, ]
+  d[good_scores, on=.(WorkerId, ImageId, experiment_no, bounding_box_score, in_treatment)]
+}
+
+d <- remove_extra_bounding_boxes(d)
+```
+
+# Sanity Check
+```{r}
+d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(experiment_no, is_pilot, in_treatment)]
+```
+
+
+# Experiment 1, our first pilot
+
+For our pilot, we gave the Turkers a negative treatment and asked that they draw a single bounding box on each of 20 images.  We first collected some information about the subject through a survey and then randomly assigned those subjects to treatment and control.  Our primary goal was to understand how our scoring scheme worked, gauge level of variance we should expect in future experiments and test if our covariates collected from our survey were helpful.  We had high attrition and due to a misunderstanding of the Mechanical Turk platform, our assignments to treatment and control failed and we ended up with Turkers not in our experiment in our results, and many ended up in both treatment and control.
+
+We were not able to trust any ETA, but we could at least see the variance, which was exceptionally high.
+
+```{r}
+# Block the results by user taking their mean score
+worker_mean_score <- d[experiment_no==1, .(score = mean(bounding_box_score), in_treatment = as.integer(median(in_treatment))), keyby=WorkerId]
+
+worker_mean_score[, plot(score, col=(in_treatment+1))]
+worker_mean_score[, plot(log(score), col=(in_treatment+1))]
+
+```
+
+
+```{r}
+
+summary(worker_mean_score[, .(score)])
+worker_mean_score[, .(mean_score=mean(score, na.rm=T), std_dev=sd(score, na.rm=T)), keyby=.(in_treatment)]
+
+#e1_mod_1 <- worker_mean_score[, lm(score ~ in_treatment)]
+#summary(e1_mod_1)
+```
+
+```{r}
+#TODO Gauge if effort decreases with more HITTs
+```
+
+
+# Experiment 2, our second pilot
+
+With the first pilot behind us, we decided we needed to focus on increasing our statistical power and hypothesized that having more subjects with fewer experiments would provide more statistical power. 
+
+
+
+```{r}
+d[experiment_no==2, plot(bounding_box_score, col=(in_treatment+1))]
+d[experiment_no==2, plot(log(bounding_box_score), col=(in_treatment+1))]
+```
+
+```{r}
+summary(d[experiment_no==2, .(bounding_box_score)])
+d[experiment_no==2, .(mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(in_treatment)]
+```
+
+
+```{r}
+e2_mod_1 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment)]
+summary(e2_mod_1)
+```
+
+
+Even with a p-value of 0.655, this was progress.  Our coeffecient for in treatment was still more likely due to random noise than not.
+
+# Experiment 3
+
+```{r}
+e3_mod_1 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment)]
+summary(e3_mod_1)
+```
+
+```{r}
+e3_mod_2 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad))]
+summary(e3_mod_2)
+```
+
+# Experiment 4, More data
+
+```{r}
+#e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad)+as.factor(income)+as.factor(age)+as.factor(edu))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad))]
+summary(e4_mod_1)
+
+```
+```{r}
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(monitor))]
+summary(e4_mod_1)
+```
+
+
+```{r}
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(didbf))]
+summary(e4_mod_1)
+
+d[experiment_no %in% c(3,4), as.factor(didbf)]
+```
+
+
+
+```{r}
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(age))]
+summary(e4_mod_1)
+```
+
+
+
+
+```{r}
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu, exclude=NA))]
+summary(e4_mod_1)
+```
+
+
+
+
+```{r}
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(income))]
+summary(e4_mod_1)
+```
+
+# Experiment 5, threats don't work
+
+```{r}
+
+e5_mod_1 <- d[experiment_no == 5, lm(bounding_box_score ~ in_treatment)]
+summary(e5_mod_1)
+```
+
+
+
+
