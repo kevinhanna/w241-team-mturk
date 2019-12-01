@@ -40,6 +40,8 @@ d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(boundin
     ##  8:             4        0            1    94   14.51884  25.36227
     ##  9:             5        0            0    96   13.55187  23.01864
     ## 10:             5        0            1    97   11.61424  11.00214
+    ## 11:             6        0            0    94   13.56319  20.70507
+    ## 12:             6        0            1    92   13.15357  17.04807
 
 # Experiment 1, our first pilot
 
@@ -178,7 +180,9 @@ summary(e2_mod_1)
 Even with a p-value of 0.655, this was progress. Our coeffecient for in
 treatment was still more likely due to random noise than not.
 
-# Experiment 3
+# Experiment 3, promis
+
+\#TODO demographic info show how random it is.
 
 ``` r
 e3_mod_1 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment)]
@@ -232,161 +236,245 @@ summary(e3_mod_2)
 
 # Experiment 4, More data
 
+\#TODO Power calculation
+
 ``` r
 #e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad)+as.factor(income)+as.factor(age)+as.factor(edu))]
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment)]
 summary(e4_mod_1)
 ```
 
     ## 
     ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + as.factor(mousetrackpad))
+    ## lm(formula = bounding_box_score ~ in_treatment)
     ## 
     ## Residuals:
     ##    Min     1Q Median     3Q    Max 
-    ## -61.46 -21.98  -9.48  -2.07 978.22 
+    ## -30.80 -23.02 -12.37  -5.59 974.46 
     ## 
     ## Coefficients:
-    ##                                  Estimate Std. Error t value Pr(>|t|)
-    ## (Intercept)                         47.57      29.96   1.588    0.113
-    ## in_treatment                       -15.91      10.06  -1.582    0.115
-    ## as.factor(mousetrackpad)mouse      -18.29      30.02  -0.609    0.543
-    ## as.factor(mousetrackpad)other      -27.15      88.75  -0.306    0.760
-    ## as.factor(mousetrackpad)trackpad    16.64      33.78   0.493    0.623
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)    33.046      7.078   4.669 4.74e-06 ***
+    ## in_treatment  -15.895     10.064  -1.579    0.115    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 83.54 on 272 degrees of freedom
+    ## Residual standard error: 83.75 on 275 degrees of freedom
     ##   (5 observations deleted due to missingness)
-    ## Multiple R-squared:  0.02468,    Adjusted R-squared:  0.01034 
-    ## F-statistic: 1.721 on 4 and 272 DF,  p-value: 0.1456
+    ## Multiple R-squared:  0.008989,   Adjusted R-squared:  0.005385 
+    ## F-statistic: 2.494 on 1 and 275 DF,  p-value: 0.1154
 
 ``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(monitor))]
+d[experiment_no %in% c(1), .(sd(bounding_box_score)), keyby=WorkerId]
+```
+
+    ##           WorkerId         V1
+    ##  1: A10HVCH6Y0N7SJ 235.584000
+    ##  2: A10IJ2B94MS2MX   6.479005
+    ##  3: A16VLS2Z2GYR29 451.348641
+    ##  4: A18WFPSLFV4FKY  10.990759
+    ##  5: A1A2NGCC4KVRB8         NA
+    ##  6: A1FPCIKO68OQ63 369.866259
+    ##  7: A1G85JMLZY7B28 290.648104
+    ##  8:  A1L89JD0FAS0Q  51.537902
+    ##  9: A1LFKPNCX23XN6 316.547010
+    ## 10: A1NCO5A4JYHGKQ  81.725544
+    ## 11: A1O4AAQX2KCD3N  63.718816
+    ## 12: A1QRO7EU8B0J4U 446.882702
+    ## 13: A1SM0IKQ4OTSCI 565.402705
+    ## 14: A1ULHXPHPJRQVZ 401.661006
+    ## 15: A1VMYCTZSIBP5J 585.616193
+    ## 16: A1Y0ABOUJUMCWW 310.157118
+    ## 17: A1ZJL7Q3MPFYJB 676.229377
+    ## 18: A1ZRK6K5JUPJAV         NA
+    ## 19: A255Z4TRTBZLKV 331.045716
+    ## 20: A2848VESF5MRA8  16.648456
+    ## 21: A2AI293TGSIILE 358.700126
+    ## 22: A2AZEEKX5O8J4N 304.610608
+    ## 23: A2CPJ227RHJRRZ         NA
+    ## 24: A2D71F0L4OOTPK         NA
+    ## 25: A2FJ8YQ6VHGD2L 351.252108
+    ## 26: A2FZ88OU42EFC8  70.061986
+    ## 27: A2G5GGLXD2KSZS  10.109615
+    ## 28: A2H75L5IY3FR41 362.377652
+    ## 29: A2JKM9ZTUWHVPF 293.844627
+    ## 30: A2KFVSJQGOHZN8  10.180322
+    ## 31: A2LAE3OM5OQ0WF  11.163816
+    ## 32: A2LCRHTK0WQEOM   3.498984
+    ## 33: A2MT0EBEHD9XGZ         NA
+    ## 34: A2RCBXJ6Q5I1C1  22.056049
+    ## 35: A2U7U0A4G92GTR   4.923758
+    ## 36: A2WTDVHVVORNDU  13.112159
+    ## 37: A2Y0G20STAP4DC  12.744619
+    ## 38: A2ZD05YZ9CKQ0D   8.485997
+    ## 39: A2ZY1BYHGB34W5 389.156840
+    ## 40: A2ZZW6KME1FUDU   8.210787
+    ## 41: A30DUC2L6BI0D5  16.431697
+    ## 42: A30N5H4N4C22N8 364.541973
+    ## 43: A359WCYOJEO9IG  11.170061
+    ## 44: A3720E38DB4LL7 456.456074
+    ## 45: A376RKV87IXIVQ   6.218161
+    ## 46: A37WQHTSP4WWK3 374.087671
+    ## 47: A39Q5Z2B8IZ59C         NA
+    ## 48: A3AFGG80UCEYNA 433.162414
+    ## 49: A3DB4V3R2RXTKU         NA
+    ## 50: A3G0UTSYPCMFBU 239.171525
+    ## 51: A3JVT6LSQTTKVS         NA
+    ## 52: A3M3CSJVL61LMM         NA
+    ## 53: A3NBJ2WSWYJPWY 308.251580
+    ## 54: A3OYVZSC9CXE5L 402.858146
+    ## 55: A3PGUPNMOU5BPW         NA
+    ## 56: A3RD75HSSMVHKM 258.728871
+    ## 57: A3UXXT6KP7MIRG 305.447980
+    ## 58:  A4GXHVTRGW5P8         NA
+    ## 59:  A67D9ONK3AJZ8  38.589711
+    ## 60:  ABBMKMTKDC065 244.492321
+    ## 61:  AE2N5QUSIL9JE 297.879277
+    ## 62:  AEDNG2VYAA8NX 297.475071
+    ## 63:  AFDUTS29O99VG 388.238234
+    ## 64:  AGJTTK50503VZ 325.134710
+    ## 65:  AJY5G987IRT25 325.745990
+    ## 66:  ALQOIBJA35DZM 549.816301
+    ## 67:  AMMUQ5FYIZ1GQ 248.004421
+    ## 68:  AMO9QDNF1R150 311.962373
+    ## 69:  AOMFEAWQHU3D8  57.455525
+    ## 70:  APSKPVAHS522W  16.796501
+    ## 71:  AV1GWUIPHJY7Q         NA
+    ## 72:  AWITQJV4D1QA4 374.829027
+    ## 73:  AXZBVDVY0VM3V 472.514159
+    ## 74:  AZIAQJWXTSFUX  59.492570
+    ##           WorkerId         V1
+
+``` r
+#e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad)+as.factor(income)+as.factor(age)+as.factor(edu))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(mousetrackpad, exclude=c("")))]
 summary(e4_mod_1)
 ```
 
     ## 
     ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + as.factor(monitor))
+    ## lm(formula = bounding_box_score ~ in_treatment + factor(mousetrackpad, 
+    ##     exclude = c("")))
     ## 
     ## Residuals:
     ##    Min     1Q Median     3Q    Max 
-    ## -82.00 -17.03  -9.66  -1.48 923.25 
+    ## -60.69 -20.75  -9.76  -2.59 978.98 
     ## 
     ## Coefficients:
-    ##                               Estimate Std. Error t value Pr(>|t|)   
-    ## (Intercept)                    261.160     81.864   3.190  0.00159 **
-    ## in_treatment                   -11.593      9.947  -1.166  0.24484   
-    ## as.factor(monitor)cellphone   -206.268     87.804  -2.349  0.01954 * 
-    ## as.factor(monitor)largescreen -243.141     82.687  -2.941  0.00356 **
-    ## as.factor(monitor)midsize     -232.912     82.376  -2.827  0.00505 **
-    ## as.factor(monitor)notsure     -246.041     91.662  -2.684  0.00772 **
-    ## as.factor(monitor)smalllaptop -234.780     82.614  -2.842  0.00483 **
-    ## as.factor(monitor)tablet      -176.908     83.939  -2.108  0.03599 * 
+    ##                                                Estimate Std. Error t value
+    ## (Intercept)                                      28.519      7.343   3.884
+    ## in_treatment                                    -14.367     10.197  -1.409
+    ## factor(mousetrackpad, exclude = c(""))other      -9.645     83.788  -0.115
+    ## factor(mousetrackpad, exclude = c(""))trackpad   34.924     17.224   2.028
+    ##                                                Pr(>|t|)    
+    ## (Intercept)                                     0.00013 ***
+    ## in_treatment                                    0.16002    
+    ## factor(mousetrackpad, exclude = c(""))other     0.90845    
+    ## factor(mousetrackpad, exclude = c(""))trackpad  0.04360 *  
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 83.46 on 265 degrees of freedom
+    ##   (13 observations deleted due to missingness)
+    ## Multiple R-squared:  0.0226, Adjusted R-squared:  0.01154 
+    ## F-statistic: 2.043 on 3 and 265 DF,  p-value: 0.1083
+
+``` r
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(monitor, exclude=c("")))]
+summary(e4_mod_1)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = bounding_box_score ~ in_treatment + factor(monitor, 
+    ##     exclude = c("")))
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -82.00 -17.09  -9.69  -1.61 923.25 
+    ## 
+    ## Coefficients:
+    ##                                             Estimate Std. Error t value
+    ## (Intercept)                                   54.891     31.747   1.729
+    ## in_treatment                                 -11.593      9.947  -1.166
+    ## factor(monitor, exclude = c(""))largescreen  -36.873     32.733  -1.126
+    ## factor(monitor, exclude = c(""))midsize      -26.643     31.902  -0.835
+    ## factor(monitor, exclude = c(""))notsure      -39.773     51.355  -0.774
+    ## factor(monitor, exclude = c(""))smalllaptop  -28.512     32.632  -0.874
+    ## factor(monitor, exclude = c(""))tablet        29.360     36.186   0.811
+    ##                                             Pr(>|t|)  
+    ## (Intercept)                                    0.085 .
+    ## in_treatment                                   0.245  
+    ## factor(monitor, exclude = c(""))largescreen    0.261  
+    ## factor(monitor, exclude = c(""))midsize        0.404  
+    ## factor(monitor, exclude = c(""))notsure        0.439  
+    ## factor(monitor, exclude = c(""))smalllaptop    0.383  
+    ## factor(monitor, exclude = c(""))tablet         0.418  
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
     ## Residual standard error: 81.86 on 269 degrees of freedom
-    ##   (5 observations deleted due to missingness)
-    ## Multiple R-squared:  0.07372,    Adjusted R-squared:  0.04962 
-    ## F-statistic: 3.059 on 7 and 269 DF,  p-value: 0.004093
+    ##   (6 observations deleted due to missingness)
+    ## Multiple R-squared:  0.04634,    Adjusted R-squared:  0.02507 
+    ## F-statistic: 2.179 on 6 and 269 DF,  p-value: 0.04535
 
 ``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(didbf))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(didbf, exclude=c("")))]
 summary(e4_mod_1)
 ```
 
     ## 
     ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + as.factor(didbf))
+    ## lm(formula = bounding_box_score ~ in_treatment + factor(didbf, 
+    ##     exclude = c("")))
     ## 
     ## Residuals:
     ##    Min     1Q Median     3Q    Max 
-    ## -58.39 -23.06 -12.21  -3.12 971.09 
+    ## -33.16 -20.71 -12.33  -3.41 972.09 
     ## 
     ## Coefficients:
-    ##                          Estimate Std. Error t value Pr(>|t|)  
-    ## (Intercept)                 66.35      30.06   2.207   0.0281 *
-    ## in_treatment               -17.37      10.21  -1.702   0.0898 .
-    ## as.factor(didbf)dontknow   -51.18      36.08  -1.419   0.1571  
-    ## as.factor(didbf)no         -40.41      31.60  -1.279   0.2021  
-    ## as.factor(didbf)yes        -29.94      30.23  -0.990   0.3229  
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ##                                   Estimate Std. Error t value Pr(>|t|)
+    ## (Intercept)                          14.83      20.40   0.727    0.468
+    ## in_treatment                        -15.44      10.36  -1.490    0.137
+    ## factor(didbf, exclude = c(""))no     10.11      23.37   0.432    0.666
+    ## factor(didbf, exclude = c(""))yes    20.58      21.48   0.958    0.339
     ## 
-    ## Residual standard error: 83.79 on 272 degrees of freedom
-    ##   (5 observations deleted due to missingness)
-    ## Multiple R-squared:  0.01882,    Adjusted R-squared:  0.00439 
-    ## F-statistic: 1.304 on 4 and 272 DF,  p-value: 0.2687
+    ## Residual standard error: 83.77 on 265 degrees of freedom
+    ##   (13 observations deleted due to missingness)
+    ## Multiple R-squared:  0.01231,    Adjusted R-squared:  0.001127 
+    ## F-statistic: 1.101 on 3 and 265 DF,  p-value: 0.3493
 
 ``` r
-d[experiment_no %in% c(3,4), as.factor(didbf)]
-```
-
-    ##   [1] no       yes      yes      yes      no       yes      dontknow
-    ##   [8] dontknow yes      yes      yes      yes      yes      yes     
-    ##  [15] yes               yes      yes      no       yes      yes     
-    ##  [22] yes      yes      yes               no       no       yes     
-    ##  [29] yes      yes      yes      no       no       yes      yes     
-    ##  [36] yes      dontknow dontknow yes      yes      yes      yes     
-    ##  [43] yes      no       yes      yes      yes      yes      yes     
-    ##  [50] yes      yes      dontknow yes      no       yes      no      
-    ##  [57] no       no       no       yes      yes      yes      yes     
-    ##  [64] yes      yes      yes      yes      yes      yes      dontknow
-    ##  [71] yes      yes      no       dontknow yes      yes      yes     
-    ##  [78] yes      no                yes      yes      yes      yes     
-    ##  [85] no       yes      yes      yes      yes      yes      no      
-    ##  [92] yes      yes      yes      no       yes      yes      dontknow
-    ##  [99]          yes      yes      yes      yes      yes      no      
-    ## [106] yes      yes      yes      yes      yes      yes      yes     
-    ## [113] yes      yes      yes      yes      no       no       yes     
-    ## [120]          yes      no       yes      yes      yes      yes     
-    ## [127] dontknow          yes      yes      yes      yes      yes     
-    ## [134] no       yes      yes      yes      yes      yes      yes     
-    ## [141] no       yes      yes      yes      yes      yes      yes     
-    ## [148] yes      yes      yes      dontknow yes      yes      yes     
-    ## [155] no       yes      no       yes      no       dontknow yes     
-    ## [162] yes      yes      yes      no       no       yes      yes     
-    ## [169] yes      dontknow no       yes      no       yes      yes     
-    ## [176] yes      no       yes      yes      yes      no       no      
-    ## [183] no       no       yes      yes      no       yes      yes     
-    ## [190] yes      yes      yes      yes      yes      dontknow yes     
-    ## [197] dontknow yes      yes      dontknow no       yes      yes     
-    ## [204] yes      yes      no       no       yes      no       no      
-    ## [211] no       yes      yes      yes      yes      yes      yes     
-    ## [218] yes      yes      no       dontknow yes      yes      yes     
-    ## [225] yes      yes      yes               yes      no               
-    ## [232] dontknow yes      yes      no       yes      yes      no      
-    ## [239] no       yes      yes      yes      yes      no       yes     
-    ## [246] yes      yes      yes      yes      yes      yes      no      
-    ## [253] yes      no       yes      no       no       yes      yes     
-    ## [260] yes      yes      yes      yes      no       yes      yes     
-    ## [267] yes      yes      no       yes      yes      no       no      
-    ## [274] no       yes      yes      yes      yes      yes      yes     
-    ## [281] no       yes     
-    ## Levels:  dontknow no yes
-
-``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(age))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(age, exclude="noans"))]
 summary(e4_mod_1)
 ```
 
     ## 
     ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + as.factor(age))
+    ## lm(formula = bounding_box_score ~ in_treatment + factor(age, 
+    ##     exclude = "noans"))
     ## 
     ## Residuals:
     ##    Min     1Q Median     3Q    Max 
     ## -35.08 -21.24 -11.82  -4.47 975.93 
     ## 
     ## Coefficients:
-    ##                      Estimate Std. Error t value Pr(>|t|)   
-    ## (Intercept)            261.16      83.21   3.139  0.00188 **
-    ## in_treatment           -15.36      10.08  -1.524  0.12874   
-    ## as.factor(age)21to30  -229.58      83.57  -2.747  0.00642 **
-    ## as.factor(age)31to40  -223.33      84.13  -2.655  0.00841 **
-    ## as.factor(age)4150    -228.50      85.67  -2.667  0.00811 **
-    ## as.factor(age)lt21    -248.02      88.29  -2.809  0.00533 **
-    ## as.factor(age)over50  -249.11      89.94  -2.770  0.00600 **
+    ##                                      Estimate Std. Error t value Pr(>|t|)
+    ## (Intercept)                            261.16      83.21   3.139  0.00188
+    ## in_treatment                           -15.36      10.08  -1.524  0.12874
+    ## factor(age, exclude = "noans")21to30  -229.58      83.57  -2.747  0.00642
+    ## factor(age, exclude = "noans")31to40  -223.33      84.13  -2.655  0.00841
+    ## factor(age, exclude = "noans")4150    -228.50      85.67  -2.667  0.00811
+    ## factor(age, exclude = "noans")lt21    -248.02      88.29  -2.809  0.00533
+    ## factor(age, exclude = "noans")over50  -249.11      89.94  -2.770  0.00600
+    ##                                        
+    ## (Intercept)                          **
+    ## in_treatment                           
+    ## factor(age, exclude = "noans")21to30 **
+    ## factor(age, exclude = "noans")31to40 **
+    ## factor(age, exclude = "noans")4150   **
+    ## factor(age, exclude = "noans")lt21   **
+    ## factor(age, exclude = "noans")over50 **
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
@@ -396,73 +484,78 @@ summary(e4_mod_1)
     ## F-statistic: 1.854 on 6 and 270 DF,  p-value: 0.08903
 
 ``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu, exclude=NA))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu, exclude=""))]
 summary(e4_mod_1)
 ```
 
     ## 
     ## Call:
     ## lm(formula = bounding_box_score ~ in_treatment + factor(edu, 
-    ##     exclude = NA))
+    ##     exclude = ""))
     ## 
     ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -117.01  -21.38  -12.72   -3.41  972.81 
+    ##    Min     1Q Median     3Q    Max 
+    ## -32.07 -20.46 -12.94  -4.09 973.68 
     ## 
     ## Coefficients:
-    ##                                          Estimate Std. Error t value
-    ## (Intercept)                                144.15      59.50   2.423
-    ## in_treatment                               -15.00      10.22  -1.467
-    ## factor(edu, exclude = NA)fouryearcollege  -109.46      59.68  -1.834
-    ## factor(edu, exclude = NA)highschool       -119.04      62.71  -1.898
-    ## factor(edu, exclude = NA)lthighschool     -129.98      83.84  -1.550
-    ## factor(edu, exclude = NA)masterorabove    -109.25      60.70  -1.800
-    ## factor(edu, exclude = NA)somecollege      -119.03      60.22  -1.977
-    ##                                          Pr(>|t|)  
-    ## (Intercept)                                0.0161 *
-    ## in_treatment                               0.1435  
-    ## factor(edu, exclude = NA)fouryearcollege   0.0677 .
-    ## factor(edu, exclude = NA)highschool        0.0587 .
-    ## factor(edu, exclude = NA)lthighschool      0.1222  
-    ## factor(edu, exclude = NA)masterorabove     0.0730 .
-    ## factor(edu, exclude = NA)somecollege       0.0491 *
+    ##                                        Estimate Std. Error t value
+    ## (Intercept)                             33.8220     8.4698   3.993
+    ## in_treatment                           -13.2460    10.2050  -1.298
+    ## factor(edu, exclude = "")highschool     -9.9491    21.4380  -0.464
+    ## factor(edu, exclude = "")lthighschool  -20.5295    59.3501  -0.346
+    ## factor(edu, exclude = "")masterorabove   0.4966    14.6413   0.034
+    ## factor(edu, exclude = "")somecollege    -9.6420    12.5140  -0.771
+    ##                                        Pr(>|t|)    
+    ## (Intercept)                            8.41e-05 ***
+    ## in_treatment                              0.195    
+    ## factor(edu, exclude = "")highschool       0.643    
+    ## factor(edu, exclude = "")lthighschool     0.730    
+    ## factor(edu, exclude = "")masterorabove    0.973    
+    ## factor(edu, exclude = "")somecollege      0.442    
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 83.84 on 270 degrees of freedom
-    ##   (5 observations deleted due to missingness)
-    ## Multiple R-squared:  0.02485,    Adjusted R-squared:  0.003179 
-    ## F-statistic: 1.147 on 6 and 270 DF,  p-value: 0.3355
+    ## Residual standard error: 83.38 on 269 degrees of freedom
+    ##   (7 observations deleted due to missingness)
+    ## Multiple R-squared:  0.01054,    Adjusted R-squared:  -0.007856 
+    ## F-statistic: 0.5728 on 5 and 269 DF,  p-value: 0.7208
 
 ``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(income))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(income, exclude=""))]
 summary(e4_mod_1)
 ```
 
     ## 
     ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + as.factor(income))
+    ## lm(formula = bounding_box_score ~ in_treatment + factor(income, 
+    ##     exclude = ""))
     ## 
     ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -112.36  -20.42  -11.46    2.10  952.65 
+    ##    Min     1Q Median     3Q    Max 
+    ## -50.89 -20.11 -10.84   1.30 953.50 
     ## 
     ## Coefficients:
-    ##                             Estimate Std. Error t value Pr(>|t|)  
-    ## (Intercept)                  148.796     58.683   2.536   0.0118 *
-    ## in_treatment                 -17.276      9.995  -1.728   0.0851 .
-    ## as.factor(income)10ktolt30k -127.381     59.139  -2.154   0.0321 *
-    ## as.factor(income)gt30klt60k  -93.946     59.215  -1.587   0.1138  
-    ## as.factor(income)gt60klt90k -125.628     59.989  -2.094   0.0372 *
-    ## as.factor(income)gt90k      -112.901     61.213  -1.844   0.0662 .
-    ## as.factor(income)lt10k      -123.900     59.606  -2.079   0.0386 *
+    ##                                        Estimate Std. Error t value
+    ## (Intercept)                              20.655      9.943   2.077
+    ## in_treatment                            -15.622      9.981  -1.565
+    ## factor(income, exclude = "")gt30klt60k   33.347     12.839   2.597
+    ## factor(income, exclude = "")gt60klt90k    1.730     15.998   0.108
+    ## factor(income, exclude = "")gt90k        14.138     20.109   0.703
+    ## factor(income, exclude = "")lt10k         3.463     14.509   0.239
+    ##                                        Pr(>|t|)   
+    ## (Intercept)                             0.03871 * 
+    ## in_treatment                            0.11871   
+    ## factor(income, exclude = "")gt30klt60k  0.00991 **
+    ## factor(income, exclude = "")gt60klt90k  0.91396   
+    ## factor(income, exclude = "")gt90k       0.48262   
+    ## factor(income, exclude = "")lt10k       0.81152   
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 82.69 on 270 degrees of freedom
-    ##   (5 observations deleted due to missingness)
-    ## Multiple R-squared:  0.05146,    Adjusted R-squared:  0.03038 
-    ## F-statistic: 2.441 on 6 and 270 DF,  p-value: 0.02578
+    ## Residual standard error: 82.27 on 269 degrees of freedom
+    ##   (7 observations deleted due to missingness)
+    ## Multiple R-squared:  0.03686,    Adjusted R-squared:  0.01895 
+    ## F-statistic: 2.059 on 5 and 269 DF,  p-value: 0.07089
 
 # Experiment 5, threats don’t work
 
@@ -490,3 +583,55 @@ summary(e5_mod_1)
     ##   (2 observations deleted due to missingness)
     ## Multiple R-squared:  0.002916,   Adjusted R-squared:  -0.00236 
     ## F-statistic: 0.5527 on 1 and 189 DF,  p-value: 0.4582
+
+# Experiment 6, threats still don’t work
+
+``` r
+e6_mod_1 <- d[experiment_no == 6, lm(bounding_box_score ~ in_treatment)]
+summary(e6_mod_1)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = bounding_box_score ~ in_treatment)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -12.02  -8.64  -6.39  -1.38 107.83 
+    ## 
+    ## Coefficients:
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   13.5632     1.9581   6.927 6.99e-11 ***
+    ## in_treatment  -0.4096     2.7842  -0.147    0.883    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 18.98 on 184 degrees of freedom
+    ## Multiple R-squared:  0.0001176,  Adjusted R-squared:  -0.005317 
+    ## F-statistic: 0.02164 on 1 and 184 DF,  p-value: 0.8832
+
+``` r
+e6_mod_2 <- d[experiment_no %in% c(5,6), lm(bounding_box_score ~ in_treatment+(Reward == "$0.05"))]
+summary(e6_mod_2)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = bounding_box_score ~ in_treatment + (Reward == "$0.05"))
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -12.399  -8.042  -5.148  -0.011 193.690 
+    ## 
+    ## Coefficients:
+    ##                       Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)            13.1730     1.6439   8.013 1.44e-14 ***
+    ## in_treatment           -1.1838     1.9033  -0.622    0.534    
+    ## Reward == "$0.05"TRUE   0.7731     1.9034   0.406    0.685    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 18.48 on 374 degrees of freedom
+    ##   (2 observations deleted due to missingness)
+    ## Multiple R-squared:  0.001484,   Adjusted R-squared:  -0.003855 
+    ## F-statistic: 0.278 on 2 and 374 DF,  p-value: 0.7575

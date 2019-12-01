@@ -101,8 +101,8 @@ summary(e2_mod_1)
 
 Even with a p-value of 0.655, this was progress.  Our coeffecient for in treatment was still more likely due to random noise than not.
 
-# Experiment 3
-
+# Experiment 3, promis 
+#TODO demographic info show how random it is.
 ```{r}
 e3_mod_1 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment)]
 summary(e3_mod_1)
@@ -114,38 +114,37 @@ summary(e3_mod_2)
 ```
 
 # Experiment 4, More data
+#TODO Power calculation
 
 ```{r}
 #e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad)+as.factor(income)+as.factor(age)+as.factor(edu))]
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment)]
+summary(e4_mod_1)
+
+d[experiment_no %in% c(1), .(sd(bounding_box_score)), keyby=WorkerId]
+```
+
+```{r}
+#e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad)+as.factor(income)+as.factor(age)+as.factor(edu))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(mousetrackpad, exclude=c("")))]
 summary(e4_mod_1)
 
 ```
 ```{r}
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(monitor))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(monitor, exclude=c("")))]
 summary(e4_mod_1)
 ```
 
 
 ```{r}
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(didbf))]
-summary(e4_mod_1)
-
-d[experiment_no %in% c(3,4), as.factor(didbf)]
-```
-
-
-
-```{r}
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(age))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(didbf, exclude=c("")))]
 summary(e4_mod_1)
 ```
 
 
 
-
 ```{r}
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu, exclude=NA))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(age, exclude="noans"))]
 summary(e4_mod_1)
 ```
 
@@ -153,7 +152,15 @@ summary(e4_mod_1)
 
 
 ```{r}
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(income))]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu, exclude=""))]
+summary(e4_mod_1)
+```
+
+
+
+
+```{r}
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(income, exclude=""))]
 summary(e4_mod_1)
 ```
 
@@ -166,5 +173,15 @@ summary(e5_mod_1)
 ```
 
 
+# Experiment 6, threats still don't work
 
+```{r}
 
+e6_mod_1 <- d[experiment_no == 6, lm(bounding_box_score ~ in_treatment)]
+summary(e6_mod_1)
+```
+
+```{r}
+e6_mod_2 <- d[experiment_no %in% c(5,6), lm(bounding_box_score ~ in_treatment+(Reward == "$0.05"))]
+summary(e6_mod_2)
+```
