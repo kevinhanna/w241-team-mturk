@@ -101,14 +101,33 @@ get_result_data_experiment_3 <- function() {
 
 }
 
+
+get_result_data_experiment_4 <- function() {
+  control <- fread("../data/experiment_4/Batch_3853433_batch_results_5cents.csv")
+  control[, in_treatment := 0]
+  
+  treatment <- fread("../data/experiment_4/Batch_3853564_batch_results_5centscompperf.csv")
+  treatment[, in_treatment := 1]
+  
+  results <- rbind(control, treatment)
+
+  results[, experiment_no := 6]
+  results[, is_pilot := 0]
+  
+  results[, Input.image_url := "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/116257e7260fdb51.jpg"]
+  return(results)
+
+}
+
 get_result_data_all_experiments <- function() {
   mturk_results_pilot_1 <- get_result_data_pilot_1()
   mturk_results_pilot_2 <- get_result_data_pilot_2()
   mturk_results_dt_1 <- get_result_data_experiment_1()
   mturk_results_dt_2 <- get_result_data_experiment_2()
   mturk_results_dt_3 <- get_result_data_experiment_3()
+  mturk_results_dt_4 <- get_result_data_experiment_4()
   
-  rbind(mturk_results_pilot_1, mturk_results_pilot_2, mturk_results_dt_1, mturk_results_dt_2, mturk_results_dt_3, fill=TRUE)
+  rbind(mturk_results_pilot_1, mturk_results_pilot_2, mturk_results_dt_1, mturk_results_dt_2, mturk_results_dt_3, mturk_results_dt_4, fill=TRUE)
 }
 
 
@@ -363,6 +382,18 @@ prep_experiment_3_data <- function() {
   fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_3/experiment_3_results.csv")
 }
 
+prep_experiment_4_data <- function() {
+
+  mturk_results_dt <- get_result_data_experiment_4()
+
+  formatted_mturk_image_boundings_dt <- extract_image_bounding_data(mturk_results_dt)
+  formatted_mturk_image_boundings_dt[, bound_size := get_bounding_size(ImageId)]
+  formatted_mturk_image_boundings_dt[, bounding_box_score := 
+                                       score_mturk_results(formatted_mturk_image_boundings_dt, formatted_mturk_image_boundings_row)]
+  
+  fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_4/experiment_4_results.csv")
+}
+
 prep__all_experiment_data <- function() {
 
   mturk_results_dt <- get_result_data_all_experiments()
@@ -375,6 +406,7 @@ prep__all_experiment_data <- function() {
   fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_all/experiment_results.csv")
 }
 
+prep_experiment_4_data()
 prep__all_experiment_data()
 
 

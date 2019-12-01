@@ -2,7 +2,7 @@ Team mTurk - Image Bounding Scoring
 ================
 
 Our scoring metric measures the accuracy of the bounding box by
-calculating the ucledian distance of the Turkers bounds to the correct
+calculating the euclidean distance of the Turkers bounds to the correct
 bounding. Therefor a **lower score is better**. When the treatment
 should cause a negative reaction, the score should increase if our
 hypothesis is correct.
@@ -23,7 +23,17 @@ remove_extra_bounding_boxes <- function(d) {
 d <- remove_extra_bounding_boxes(d)
 ```
 
-# Sanity Check
+# Our Experiments
+
+1: Pilot - Bound 20 images with negative treatment (Government
+Surveillance) 2: Pilot - Bound a single image with negative treatment
+(Government Surveillance) 3: Experiment - Bound a single image with
+positive treatment (Potential future work) 4: Experiment - Increase
+subjects for experiment 3 5: Experiment - Bound a single image with
+negative treatment, reward 2 cents (Threat of not paying for poor
+performance) 6: Experiment - Bound a single image with negative
+treatment, increased reward to 5 cents (Threat of not paying for poor
+performance)
 
 ``` r
 d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(experiment_no, is_pilot, in_treatment)]
@@ -177,10 +187,38 @@ summary(e2_mod_1)
     ## Multiple R-squared:  0.0005385,  Adjusted R-squared:  -0.002156 
     ## F-statistic: 0.1999 on 1 and 371 DF,  p-value: 0.6551
 
-Even with a p-value of 0.655, this was progress. Our coeffecient for in
+Even with a p-value of 0.655, this was progress. Our coefficient for in
 treatment was still more likely due to random noise than not.
 
-# Experiment 3, promis
+## Power Test
+
+``` r
+e2_eta = d[experiment_no==2 & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no==2 & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
+
+e2_sd = d[experiment_no==2, sd(bounding_box_score, na.rm=T)]
+
+
+power.t.test(delta=e2_eta, 
+             sd=e2_sd, 
+             sig.level = 0.05,
+             power = 0.80,
+             alternative = "one.sided",
+             n = NULL)
+```
+
+    ## 
+    ##      Two-sample t test power calculation 
+    ## 
+    ##               n = 5756.986
+    ##           delta = 1.835148
+    ##              sd = 39.59534
+    ##       sig.level = 0.05
+    ##           power = 0.8
+    ##     alternative = one.sided
+    ## 
+    ## NOTE: n is number in *each* group
+
+# Experiment 3, promise
 
 \#TODO demographic info show how random it is.
 
@@ -234,12 +272,37 @@ summary(e3_mod_2)
     ## Multiple R-squared:  0.03076,    Adjusted R-squared:  -0.002285 
     ## F-statistic: 0.9308 on 3 and 88 DF,  p-value: 0.4294
 
-# Experiment 4, More data
-
-\#TODO Power calculation
+## Power Test
 
 ``` r
-#e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad)+as.factor(income)+as.factor(age)+as.factor(edu))]
+e3_eta = d[experiment_no==3 & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no==3 & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
+
+e3_sd = d[experiment_no==3, sd(bounding_box_score, na.rm=T)]
+
+
+power.t.test(delta=e3_eta, 
+             sd=e3_sd, 
+             sig.level = 0.05,
+             power = 0.80,
+             alternative = "one.sided",
+             n = NULL)
+```
+
+    ## 
+    ##      Two-sample t test power calculation 
+    ## 
+    ##               n = 834.1739
+    ##           delta = 3.686703
+    ##              sd = 30.26851
+    ##       sig.level = 0.05
+    ##           power = 0.8
+    ##     alternative = one.sided
+    ## 
+    ## NOTE: n is number in *each* group
+
+# Experiment 4, More data
+
+``` r
 e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment)]
 summary(e4_mod_1)
 ```
@@ -265,90 +328,12 @@ summary(e4_mod_1)
     ## F-statistic: 2.494 on 1 and 275 DF,  p-value: 0.1154
 
 ``` r
-d[experiment_no %in% c(1), .(sd(bounding_box_score)), keyby=WorkerId]
+#d[experiment_no %in% c(1), .(sd(bounding_box_score)), keyby=WorkerId]
 ```
 
-    ##           WorkerId         V1
-    ##  1: A10HVCH6Y0N7SJ 235.584000
-    ##  2: A10IJ2B94MS2MX   6.479005
-    ##  3: A16VLS2Z2GYR29 451.348641
-    ##  4: A18WFPSLFV4FKY  10.990759
-    ##  5: A1A2NGCC4KVRB8         NA
-    ##  6: A1FPCIKO68OQ63 369.866259
-    ##  7: A1G85JMLZY7B28 290.648104
-    ##  8:  A1L89JD0FAS0Q  51.537902
-    ##  9: A1LFKPNCX23XN6 316.547010
-    ## 10: A1NCO5A4JYHGKQ  81.725544
-    ## 11: A1O4AAQX2KCD3N  63.718816
-    ## 12: A1QRO7EU8B0J4U 446.882702
-    ## 13: A1SM0IKQ4OTSCI 565.402705
-    ## 14: A1ULHXPHPJRQVZ 401.661006
-    ## 15: A1VMYCTZSIBP5J 585.616193
-    ## 16: A1Y0ABOUJUMCWW 310.157118
-    ## 17: A1ZJL7Q3MPFYJB 676.229377
-    ## 18: A1ZRK6K5JUPJAV         NA
-    ## 19: A255Z4TRTBZLKV 331.045716
-    ## 20: A2848VESF5MRA8  16.648456
-    ## 21: A2AI293TGSIILE 358.700126
-    ## 22: A2AZEEKX5O8J4N 304.610608
-    ## 23: A2CPJ227RHJRRZ         NA
-    ## 24: A2D71F0L4OOTPK         NA
-    ## 25: A2FJ8YQ6VHGD2L 351.252108
-    ## 26: A2FZ88OU42EFC8  70.061986
-    ## 27: A2G5GGLXD2KSZS  10.109615
-    ## 28: A2H75L5IY3FR41 362.377652
-    ## 29: A2JKM9ZTUWHVPF 293.844627
-    ## 30: A2KFVSJQGOHZN8  10.180322
-    ## 31: A2LAE3OM5OQ0WF  11.163816
-    ## 32: A2LCRHTK0WQEOM   3.498984
-    ## 33: A2MT0EBEHD9XGZ         NA
-    ## 34: A2RCBXJ6Q5I1C1  22.056049
-    ## 35: A2U7U0A4G92GTR   4.923758
-    ## 36: A2WTDVHVVORNDU  13.112159
-    ## 37: A2Y0G20STAP4DC  12.744619
-    ## 38: A2ZD05YZ9CKQ0D   8.485997
-    ## 39: A2ZY1BYHGB34W5 389.156840
-    ## 40: A2ZZW6KME1FUDU   8.210787
-    ## 41: A30DUC2L6BI0D5  16.431697
-    ## 42: A30N5H4N4C22N8 364.541973
-    ## 43: A359WCYOJEO9IG  11.170061
-    ## 44: A3720E38DB4LL7 456.456074
-    ## 45: A376RKV87IXIVQ   6.218161
-    ## 46: A37WQHTSP4WWK3 374.087671
-    ## 47: A39Q5Z2B8IZ59C         NA
-    ## 48: A3AFGG80UCEYNA 433.162414
-    ## 49: A3DB4V3R2RXTKU         NA
-    ## 50: A3G0UTSYPCMFBU 239.171525
-    ## 51: A3JVT6LSQTTKVS         NA
-    ## 52: A3M3CSJVL61LMM         NA
-    ## 53: A3NBJ2WSWYJPWY 308.251580
-    ## 54: A3OYVZSC9CXE5L 402.858146
-    ## 55: A3PGUPNMOU5BPW         NA
-    ## 56: A3RD75HSSMVHKM 258.728871
-    ## 57: A3UXXT6KP7MIRG 305.447980
-    ## 58:  A4GXHVTRGW5P8         NA
-    ## 59:  A67D9ONK3AJZ8  38.589711
-    ## 60:  ABBMKMTKDC065 244.492321
-    ## 61:  AE2N5QUSIL9JE 297.879277
-    ## 62:  AEDNG2VYAA8NX 297.475071
-    ## 63:  AFDUTS29O99VG 388.238234
-    ## 64:  AGJTTK50503VZ 325.134710
-    ## 65:  AJY5G987IRT25 325.745990
-    ## 66:  ALQOIBJA35DZM 549.816301
-    ## 67:  AMMUQ5FYIZ1GQ 248.004421
-    ## 68:  AMO9QDNF1R150 311.962373
-    ## 69:  AOMFEAWQHU3D8  57.455525
-    ## 70:  APSKPVAHS522W  16.796501
-    ## 71:  AV1GWUIPHJY7Q         NA
-    ## 72:  AWITQJV4D1QA4 374.829027
-    ## 73:  AXZBVDVY0VM3V 472.514159
-    ## 74:  AZIAQJWXTSFUX  59.492570
-    ##           WorkerId         V1
-
 ``` r
-#e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+as.factor(mousetrackpad)+as.factor(income)+as.factor(age)+as.factor(edu))]
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(mousetrackpad, exclude=c("")))]
-summary(e4_mod_1)
+e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(mousetrackpad, exclude=c("")))]
+summary(e4_mod_2)
 ```
 
     ## 
@@ -380,182 +365,499 @@ summary(e4_mod_1)
     ## F-statistic: 2.043 on 3 and 265 DF,  p-value: 0.1083
 
 ``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(monitor, exclude=c("")))]
-summary(e4_mod_1)
+stargazer(e4_mod_1, e4_mod_2, 
+          type = 'latex', header = FALSE, table.placement = 'h', 
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
-
-    ## 
-    ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + factor(monitor, 
-    ##     exclude = c("")))
-    ## 
-    ## Residuals:
-    ##    Min     1Q Median     3Q    Max 
-    ## -82.00 -17.09  -9.69  -1.61 923.25 
-    ## 
-    ## Coefficients:
-    ##                                             Estimate Std. Error t value
-    ## (Intercept)                                   54.891     31.747   1.729
-    ## in_treatment                                 -11.593      9.947  -1.166
-    ## factor(monitor, exclude = c(""))largescreen  -36.873     32.733  -1.126
-    ## factor(monitor, exclude = c(""))midsize      -26.643     31.902  -0.835
-    ## factor(monitor, exclude = c(""))notsure      -39.773     51.355  -0.774
-    ## factor(monitor, exclude = c(""))smalllaptop  -28.512     32.632  -0.874
-    ## factor(monitor, exclude = c(""))tablet        29.360     36.186   0.811
-    ##                                             Pr(>|t|)  
-    ## (Intercept)                                    0.085 .
-    ## in_treatment                                   0.245  
-    ## factor(monitor, exclude = c(""))largescreen    0.261  
-    ## factor(monitor, exclude = c(""))midsize        0.404  
-    ## factor(monitor, exclude = c(""))notsure        0.439  
-    ## factor(monitor, exclude = c(""))smalllaptop    0.383  
-    ## factor(monitor, exclude = c(""))tablet         0.418  
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 81.86 on 269 degrees of freedom
-    ##   (6 observations deleted due to missingness)
-    ## Multiple R-squared:  0.04634,    Adjusted R-squared:  0.02507 
-    ## F-statistic: 2.179 on 6 and 269 DF,  p-value: 0.04535
 
 ``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(didbf, exclude=c("")))]
-summary(e4_mod_1)
+e4_mod_3 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(monitor, exclude=c("")))]
+e4_mod_4 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(didbf, exclude=c("")))]
+e4_mod_5 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(age, exclude="noans"))]
+e4_mod_6 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu, exclude=""))]
+e4_mod_7 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(income, exclude=""))]
+
+stargazer(e4_mod_3, e4_mod_4, e4_mod_5, e4_mod_6, e4_mod_7,
+          type = 'latex', header = FALSE, table.placement = 'h', 
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
 
-    ## 
-    ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + factor(didbf, 
-    ##     exclude = c("")))
-    ## 
-    ## Residuals:
-    ##    Min     1Q Median     3Q    Max 
-    ## -33.16 -20.71 -12.33  -3.41 972.09 
-    ## 
-    ## Coefficients:
-    ##                                   Estimate Std. Error t value Pr(>|t|)
-    ## (Intercept)                          14.83      20.40   0.727    0.468
-    ## in_treatment                        -15.44      10.36  -1.490    0.137
-    ## factor(didbf, exclude = c(""))no     10.11      23.37   0.432    0.666
-    ## factor(didbf, exclude = c(""))yes    20.58      21.48   0.958    0.339
-    ## 
-    ## Residual standard error: 83.77 on 265 degrees of freedom
-    ##   (13 observations deleted due to missingness)
-    ## Multiple R-squared:  0.01231,    Adjusted R-squared:  0.001127 
-    ## F-statistic: 1.101 on 3 and 265 DF,  p-value: 0.3493
+## Power Test
 
 ``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(age, exclude="noans"))]
-summary(e4_mod_1)
+e4_eta = d[experiment_no %in% c(3, 4) & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no %in% c(3, 4) & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
+
+e4_sd = d[experiment_no %in% c(3, 4), sd(bounding_box_score, na.rm=T)]
+
+
+power.t.test(delta=abs(e4_eta), 
+             sd=e4_sd, 
+             sig.level = 0.05,
+             power = 0.80,
+             alternative = "one.sided",
+             n = NULL)
 ```
 
     ## 
-    ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + factor(age, 
-    ##     exclude = "noans"))
+    ##      Two-sample t test power calculation 
     ## 
-    ## Residuals:
-    ##    Min     1Q Median     3Q    Max 
-    ## -35.08 -21.24 -11.82  -4.47 975.93 
+    ##               n = 345.7973
+    ##           delta = 15.89495
+    ##              sd = 83.97393
+    ##       sig.level = 0.05
+    ##           power = 0.8
+    ##     alternative = one.sided
     ## 
-    ## Coefficients:
-    ##                                      Estimate Std. Error t value Pr(>|t|)
-    ## (Intercept)                            261.16      83.21   3.139  0.00188
-    ## in_treatment                           -15.36      10.08  -1.524  0.12874
-    ## factor(age, exclude = "noans")21to30  -229.58      83.57  -2.747  0.00642
-    ## factor(age, exclude = "noans")31to40  -223.33      84.13  -2.655  0.00841
-    ## factor(age, exclude = "noans")4150    -228.50      85.67  -2.667  0.00811
-    ## factor(age, exclude = "noans")lt21    -248.02      88.29  -2.809  0.00533
-    ## factor(age, exclude = "noans")over50  -249.11      89.94  -2.770  0.00600
-    ##                                        
-    ## (Intercept)                          **
-    ## in_treatment                           
-    ## factor(age, exclude = "noans")21to30 **
-    ## factor(age, exclude = "noans")31to40 **
-    ## factor(age, exclude = "noans")4150   **
-    ## factor(age, exclude = "noans")lt21   **
-    ## factor(age, exclude = "noans")over50 **
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 83.21 on 270 degrees of freedom
-    ##   (5 observations deleted due to missingness)
-    ## Multiple R-squared:  0.03956,    Adjusted R-squared:  0.01822 
-    ## F-statistic: 1.854 on 6 and 270 DF,  p-value: 0.08903
+    ## NOTE: n is number in *each* group
 
 ``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu, exclude=""))]
-summary(e4_mod_1)
+power_curve <- function(x) {
+  result = c()
+
+  for (i in 1:length(x)) {
+    new_n <- power.t.test(delta=abs(e4_eta), 
+             sd=e4_sd, 
+             sig.level = 0.05,
+             power = NULL,
+             alternative = "one.sided",
+             n = x[i])["power"]
+    
+    result <- c(result, new_n)
+  }
+  
+  return(result)
+}
+
+sig_curve <- function(x) {
+  result = c()
+
+  for (i in 1:length(x)) {
+    new_n <- power.t.test(delta=abs(e4_eta), 
+             sd=e4_sd, 
+             sig.level = NULL,
+             power = 0.8,
+             alternative = "one.sided",
+             n = x[i])["sig.level"]
+    
+    result <- c(result, new_n)
+  }
+  
+  return(result)
+}
+curve(power_curve(x), 10, 1000)
 ```
 
-    ## 
-    ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + factor(edu, 
-    ##     exclude = ""))
-    ## 
-    ## Residuals:
-    ##    Min     1Q Median     3Q    Max 
-    ## -32.07 -20.46 -12.94  -4.09 973.68 
-    ## 
-    ## Coefficients:
-    ##                                        Estimate Std. Error t value
-    ## (Intercept)                             33.8220     8.4698   3.993
-    ## in_treatment                           -13.2460    10.2050  -1.298
-    ## factor(edu, exclude = "")highschool     -9.9491    21.4380  -0.464
-    ## factor(edu, exclude = "")lthighschool  -20.5295    59.3501  -0.346
-    ## factor(edu, exclude = "")masterorabove   0.4966    14.6413   0.034
-    ## factor(edu, exclude = "")somecollege    -9.6420    12.5140  -0.771
-    ##                                        Pr(>|t|)    
-    ## (Intercept)                            8.41e-05 ***
-    ## in_treatment                              0.195    
-    ## factor(edu, exclude = "")highschool       0.643    
-    ## factor(edu, exclude = "")lthighschool     0.730    
-    ## factor(edu, exclude = "")masterorabove    0.973    
-    ## factor(edu, exclude = "")somecollege      0.442    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 83.38 on 269 degrees of freedom
-    ##   (7 observations deleted due to missingness)
-    ## Multiple R-squared:  0.01054,    Adjusted R-squared:  -0.007856 
-    ## F-statistic: 0.5728 on 5 and 269 DF,  p-value: 0.7208
+![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 ``` r
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(income, exclude=""))]
-summary(e4_mod_1)
+curve(sig_curve(x), 10, 1000)
 ```
 
-    ## 
-    ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + factor(income, 
-    ##     exclude = ""))
-    ## 
-    ## Residuals:
-    ##    Min     1Q Median     3Q    Max 
-    ## -50.89 -20.11 -10.84   1.30 953.50 
-    ## 
-    ## Coefficients:
-    ##                                        Estimate Std. Error t value
-    ## (Intercept)                              20.655      9.943   2.077
-    ## in_treatment                            -15.622      9.981  -1.565
-    ## factor(income, exclude = "")gt30klt60k   33.347     12.839   2.597
-    ## factor(income, exclude = "")gt60klt90k    1.730     15.998   0.108
-    ## factor(income, exclude = "")gt90k        14.138     20.109   0.703
-    ## factor(income, exclude = "")lt10k         3.463     14.509   0.239
-    ##                                        Pr(>|t|)   
-    ## (Intercept)                             0.03871 * 
-    ## in_treatment                            0.11871   
-    ## factor(income, exclude = "")gt30klt60k  0.00991 **
-    ## factor(income, exclude = "")gt60klt90k  0.91396   
-    ## factor(income, exclude = "")gt90k       0.48262   
-    ## factor(income, exclude = "")lt10k       0.81152   
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 82.27 on 269 degrees of freedom
-    ##   (7 observations deleted due to missingness)
-    ## Multiple R-squared:  0.03686,    Adjusted R-squared:  0.01895 
-    ## F-statistic: 2.059 on 5 and 269 DF,  p-value: 0.07089
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+    
+    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
+    ## = sqrt(n/tsample) * : full precision may not have been achieved in
+    ## 'pnt{final}'
+
+![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-19-2.png)<!-- -->
 
 # Experiment 5, threats don’t work
 
