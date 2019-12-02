@@ -167,7 +167,7 @@ stargazer(e2_mod_1,  e2_mod_2,
 ```
 
 
-```{r experiment_2_regression, echo=FALSE, results='asis'}
+```{r experiment_2_regression_time, echo=FALSE, results='asis'}
 e2_mod_3 <- d[experiment_no==2, lm(WorkTimeInSeconds ~ in_treatment)]
 #e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
 
@@ -223,7 +223,7 @@ stargazer(e3_mod_1, e3_mod_2, e3_mod_3, e3_mod_4, e3_mod_5, e3_mod_6,
 ```
 
 The only covariate which seemed to act as any type of control was the education question, though it wasn't very significant.  However, all of the coeffecients for the screensize question were negative, and by a fairly significant ammount.  The baseline value was cellphone, which can be significantly smaller than all the other types of screens.  So we tested that on its own.
-```{r experiment_3_regression, echo=FALSE, results='asis'}
+```{r experiment_3_regression_cell, echo=FALSE, results='asis'}
 e3_mod_7 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+(monitor=="cellphone"))]
 
 stargazer(e3_mod_7, 
@@ -231,7 +231,7 @@ stargazer(e3_mod_7,
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
 
-```{r experiment_3_regression, echo=FALSE, results='asis'}
+```{r experiment_3_regression_time, echo=FALSE, results='asis'}
 e3_mod_3 <- d[experiment_no==3, lm(WorkTimeInSeconds ~ in_treatment)]
 #e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
 
@@ -239,6 +239,7 @@ stargazer(e3_mod_3, e2_mod_3,
           type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
+
 #### 3.1 Power Test
 ```{r}
 
