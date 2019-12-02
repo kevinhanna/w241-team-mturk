@@ -230,37 +230,46 @@ extract_image_bounding_data <- function(dt) {
     # Compile responses in to columns
     bounding_boxes_dt$didbf <- ifelse(row$Answer._1donebf1.yes ==TRUE, "yes", 
                       ifelse(row$Answer._1donebf2.no == TRUE, "no", 
-                      ifelse(row$Answer._1donebf3.dontknow == TRUE, "dontknow",NA)))
+                      ifelse(row$Answer._1donebf3.dontknow == TRUE, "dontknow","NA")))
     
     bounding_boxes_dt$monitor <- ifelse(row$Answer._2monitor1.cellphone   ==TRUE, "cellphone", 
                       ifelse(row$Answer._2monitor2.tablet   == TRUE, "tablet",
                       ifelse(row$Answer._2monitor3.smalllaptop == TRUE, "smalllaptop",
                       ifelse(row$Answer._2monitor4.midsize == TRUE, "midsize",
                       ifelse(row$Answer._2monitor5.largescreen == TRUE, "largescreen",
-                      ifelse(row$Answer._2monitor6.notsure == TRUE, "notsure",NA))))))
+                      ifelse(row$Answer._2monitor6.notsure == TRUE, "notsure","NA"))))))
     
     bounding_boxes_dt$mousetrackpad<-ifelse(row$Answer._3cursor1.mouse == TRUE, "mouse", 
                       ifelse(row$Answer._3cursor2.trackpad == TRUE, "trackpad",
-                      ifelse(row$Answer._3cursor3.other == TRUE, "other",NA)))
+                      ifelse(row$Answer._3cursor3.other == TRUE, "other","NA")))
     
     bounding_boxes_dt$age<-ifelse(row$Answer._4age1.lt21 ==TRUE, "lt21", 
                       ifelse(row$Answer._4age2.21to30 == TRUE, "21to30",
                       ifelse(row$Answer._4age3.31to30 == TRUE, "31to40", 
                       #31to30 variable poorly named, but no impact, UI was correct. 
-                      ifelse(row$Answer._4age4.41to50 == TRUE, "4150",
-                      ifelse(row$Answer._4age5.over50r == TRUE, "over50",NA)))))
+                      ifelse(row$Answer._4age4.41to50 == TRUE, "41to50",
+                      ifelse(row$Answer._4age5.over50r == TRUE, "over50","NA")))))
     
     bounding_boxes_dt$income<-ifelse(row$Answer._5income1.lt10k ==TRUE, "lt10k", 
                       ifelse(row$Answer._5income2.gt10klt30k == TRUE, "10ktolt30k",
                       ifelse(row$Answer._5income3.gt30klt60k == TRUE, "gt30klt60k", 
                       ifelse(row$Answer._5income4.gt60klt90k == TRUE, "gt60klt90k",
-                      ifelse(row$Answer._5income5.gt90k == TRUE, "gt90k",NA)))))
+                      ifelse(row$Answer._5income5.gt90k == TRUE, "gt90k","NA")))))
     
     bounding_boxes_dt$edu<-ifelse(row$Answer._6edu1.lthighschool ==TRUE, "lthighschool", 
                       ifelse(row$Answer._6edu2.highschool == TRUE, "highschool",
                       ifelse(row$Answer._6edu3.somecollege == TRUE, "somecollege", 
                       ifelse(row$Answer._6edu4.fouryearcollege == TRUE, "fouryearcollege",
-                      ifelse(row$Answer._6edu5.masterorabove == TRUE, "masterorabove",NA)))))
+                      ifelse(row$Answer._6edu5.masterorabove == TRUE, "masterorabove","NA")))))
+    
+    bounding_boxes_dt$is_mobile <- as.numeric((row$Answer._2monitor1.cellphone | row$Answer._2monitor2.tablet))
+    bounding_boxes_dt$is_cellphone <- as.numeric(row$Answer._2monitor1.cellphone)
+    
+    bounding_boxes_dt$mousetrackpad2<-ifelse(row$Answer._3cursor1.mouse == TRUE, "mouse", 
+                      ifelse(row$Answer._3cursor2.trackpad == TRUE, "trackpad",
+                      ifelse((row$Answer._2monitor1.cellphone | row$Answer._2monitor2.tablet), "touchscreen",
+                      ifelse(row$Answer._3cursor3.other == TRUE, "other","NA"))))
+
     
     bounding_boxes_dt[, ImageId := row[, Input.image_url]] # Column renamed
     bounding_boxes_dt[, in_treatment := row[, in_treatment]]
@@ -406,7 +415,7 @@ prep__all_experiment_data <- function() {
   fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_all/experiment_results.csv")
 }
 
-prep_experiment_4_data()
+#prep_experiment_4_data()
 prep__all_experiment_data()
 
 

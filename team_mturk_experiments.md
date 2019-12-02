@@ -1,5 +1,23 @@
-Team mTurk - Image Bounding Scoring
+Team mTurk - Motivating Quality Work
 ================
+Kevin Hanna, Kevin Stone, Changjing Zhao
+
+  - [Motivating Quality Work](#motivating-quality-work)
+      - [What motivates crowdsourced workers to do quality
+        work?](#what-motivates-crowdsourced-workers-to-do-quality-work)
+      - [Our Experiments](#our-experiments)
+      - [Experiment 1, our first pilot](#experiment-1-our-first-pilot)
+      - [Experiment 2, our second pilot](#experiment-2-our-second-pilot)
+      - [Experiment 3, promise](#experiment-3-promise)
+      - [Experiment 4, More data](#experiment-4-more-data)
+      - [Experiment 5, threats don’t
+        work](#experiment-5-threats-dont-work)
+      - [Experiment 6, threats still don’t
+        work](#experiment-6-threats-still-dont-work)
+
+## Motivating Quality Work
+
+### What motivates crowdsourced workers to do quality work?
 
 Our scoring metric measures the accuracy of the bounding box by
 calculating the euclidean distance of the Turkers bounds to the correct
@@ -7,53 +25,38 @@ bounding. Therefor a **lower score is better**. When the treatment
 should cause a negative reaction, the score should increase if our
 hypothesis is correct.
 
-``` r
-# Read in all the data, we'll use the 'experiment_no' to pull the results from each experiment. 
-d <- fread("./data/experiment_all/experiment_results.csv")
-```
+### Our Experiments
 
-``` r
-# None of our experiments required creating multiple bounding boxes on a single image.
-# We are assuming the extra bounding boxes are mistakes and taking the better score.
-remove_extra_bounding_boxes <- function(d) {
-  good_scores <- d[,  .(bounding_box_score = min(bounding_box_score), count = .N), keyby=.(WorkerId, ImageId, experiment_no, in_treatment)] %>% .[count<2, ]
-  d[good_scores, on=.(WorkerId, ImageId, experiment_no, bounding_box_score, in_treatment)]
-}
+1.  Pilot - Bound 20 images with negative treatment (Government
+    Surveillance)
+2.  Pilot - Bound a single image with negative treatment (Government
+    Surveillance)
+3.  Experiment - Bound a single image with positive treatment (Potential
+    future work)
+4.  Experiment - Increase subjects for experiment 3
+5.  Experiment - Bound a single image with negative treatment, reward 2
+    cents (Threat of not paying for poor performance)
+6.  Experiment - Bound a single image with negative treatment, increased
+    reward to 5 cents (Threat of not paying for poor performance)
 
-d <- remove_extra_bounding_boxes(d)
-```
+| experiment\_no | is\_pilot | in\_treatment | count | mean\_score |  std\_dev |
+| -------------: | --------: | ------------: | ----: | ----------: | --------: |
+|              1 |         1 |             0 |   397 |   137.60402 | 295.29711 |
+|              1 |         1 |             1 |   396 |   136.39470 | 296.29412 |
+|              2 |         1 |             0 |   187 |    15.25847 |  36.79851 |
+|              2 |         1 |             1 |   189 |    17.09362 |  42.27343 |
+|              3 |         0 |             0 |    48 |    19.02776 |  23.08104 |
+|              3 |         0 |             1 |    47 |    22.71446 |  36.73351 |
+|              4 |         0 |             0 |    93 |    40.35981 | 139.47131 |
+|              4 |         0 |             1 |    94 |    14.51884 |  25.36227 |
+|              5 |         0 |             0 |    96 |    13.55187 |  23.01864 |
+|              5 |         0 |             1 |    97 |    11.61424 |  11.00214 |
+|              6 |         0 |             0 |    94 |    13.56319 |  20.70507 |
+|              6 |         0 |             1 |    92 |    13.15357 |  17.04807 |
 
-# Our Experiments
+Experiment Data Summary
 
-1: Pilot - Bound 20 images with negative treatment (Government
-Surveillance) 2: Pilot - Bound a single image with negative treatment
-(Government Surveillance) 3: Experiment - Bound a single image with
-positive treatment (Potential future work) 4: Experiment - Increase
-subjects for experiment 3 5: Experiment - Bound a single image with
-negative treatment, reward 2 cents (Threat of not paying for poor
-performance) 6: Experiment - Bound a single image with negative
-treatment, increased reward to 5 cents (Threat of not paying for poor
-performance)
-
-``` r
-d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(experiment_no, is_pilot, in_treatment)]
-```
-
-    ##     experiment_no is_pilot in_treatment count mean_score   std_dev
-    ##  1:             1        1            0   397  137.60402 295.29711
-    ##  2:             1        1            1   396  136.39470 296.29412
-    ##  3:             2        1            0   187   15.25847  36.79851
-    ##  4:             2        1            1   189   17.09362  42.27343
-    ##  5:             3        0            0    48   19.02776  23.08104
-    ##  6:             3        0            1    47   22.71446  36.73351
-    ##  7:             4        0            0    93   40.35981 139.47131
-    ##  8:             4        0            1    94   14.51884  25.36227
-    ##  9:             5        0            0    96   13.55187  23.01864
-    ## 10:             5        0            1    97   11.61424  11.00214
-    ## 11:             6        0            0    94   13.56319  20.70507
-    ## 12:             6        0            1    92   13.15357  17.04807
-
-# Experiment 1, our first pilot
+### Experiment 1, our first pilot
 
 For our pilot, we gave the Turkers a negative treatment and asked that
 they draw a single bounding box on each of 20 images. We first collected
@@ -67,83 +70,37 @@ treatment and control failed and we ended up with Turkers not in our
 experiment in our results, and many ended up in both treatment and
 control.
 
-We were not able to trust any ETA, but we could at least see the
+We were not able to trust any ATE, but we could at least see the
 variance, which was exceptionally high.
 
-``` r
-# Block the results by user taking their mean score
-worker_mean_score <- d[experiment_no==1, .(score = mean(bounding_box_score), in_treatment = as.integer(median(in_treatment))), keyby=WorkerId]
+![](team_mturk_experiments_files/figure-gfm/plot_experiment_1-1.png)<!-- -->![](team_mturk_experiments_files/figure-gfm/plot_experiment_1-2.png)<!-- -->
 
-worker_mean_score[, plot(score, col=(in_treatment+1))]
-```
+|  | mean\_worker\_score |
+|  | :------------------ |
+|  | Min. : 5.003        |
+|  | 1st Qu.: 25.938     |
+|  | Median :119.894     |
+|  | Mean :135.288       |
+|  | 3rd Qu.:178.160     |
+|  | Max. :994.601       |
+|  | NA’s :1             |
 
-![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
-
-    ## NULL
-
-``` r
-worker_mean_score[, plot(log(score), col=(in_treatment+1))]
-```
-
-![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
-
-    ## NULL
-
-``` r
-summary(worker_mean_score[, .(score)])
-```
-
-    ##      score        
-    ##  Min.   :  5.003  
-    ##  1st Qu.: 25.938  
-    ##  Median :119.894  
-    ##  Mean   :135.288  
-    ##  3rd Qu.:178.160  
-    ##  Max.   :994.601  
-    ##  NA's   :1
-
-``` r
-worker_mean_score[, .(mean_score=mean(score, na.rm=T), std_dev=sd(score, na.rm=T)), keyby=.(in_treatment)]
-```
-
-    ##    in_treatment mean_score  std_dev
-    ## 1:            0   146.7838 125.4300
-    ## 2:            1   118.8101 190.9985
-
-``` r
-#e1_mod_1 <- worker_mean_score[, lm(score ~ in_treatment)]
-#summary(e1_mod_1)
-```
+| in\_treatment | mean\_score | std\_dev |
+| ------------: | ----------: | -------: |
+|             0 |    146.7838 | 125.4300 |
+|             1 |    118.8101 | 190.9985 |
 
 ``` r
 #TODO Gauge if effort decreases with more HITTs
 ```
 
-# Experiment 2, our second pilot
+### Experiment 2, our second pilot
 
 With the first pilot behind us, we decided we needed to focus on
 increasing our statistical power and hypothesized that having more
 subjects with fewer experiments would provide more statistical power.
 
-``` r
-d[experiment_no==2, plot(bounding_box_score, col=(in_treatment+1))]
-```
-
-![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-
-    ## NULL
-
-``` r
-d[experiment_no==2, plot(log(bounding_box_score), col=(in_treatment+1))]
-```
-
-![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
-
-    ## NULL
-
-``` r
-summary(d[experiment_no==2, .(bounding_box_score)])
-```
+![](team_mturk_experiments_files/figure-gfm/plot_experiment_2-1.png)<!-- -->![](team_mturk_experiments_files/figure-gfm/plot_experiment_2-2.png)<!-- -->
 
     ##  bounding_box_score
     ##  Min.   :  1.423   
@@ -154,13 +111,10 @@ summary(d[experiment_no==2, .(bounding_box_score)])
     ##  Max.   :489.540   
     ##  NA's   :3
 
-``` r
-d[experiment_no==2, .(mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(in_treatment)]
-```
-
-    ##    in_treatment mean_score  std_dev
-    ## 1:            0   15.25847 36.79851
-    ## 2:            1   17.09362 42.27343
+| in\_treatment | mean\_score | std\_dev |
+| ------------: | ----------: | -------: |
+|             0 |    15.25847 | 36.79851 |
+|             1 |    17.09362 | 42.27343 |
 
 ``` r
 e2_mod_1 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment)]
@@ -190,15 +144,15 @@ summary(e2_mod_1)
 Even with a p-value of 0.655, this was progress. Our coefficient for in
 treatment was still more likely due to random noise than not.
 
-## Power Test
+#### 2.1 Power Test
 
 ``` r
-e2_eta = d[experiment_no==2 & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no==2 & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
+e2_ate = d[experiment_no==2 & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no==2 & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
 
 e2_sd = d[experiment_no==2, sd(bounding_box_score, na.rm=T)]
 
 
-power.t.test(delta=e2_eta, 
+power.t.test(delta=e2_ate, 
              sd=e2_sd, 
              sig.level = 0.05,
              power = 0.80,
@@ -218,7 +172,7 @@ power.t.test(delta=e2_eta,
     ## 
     ## NOTE: n is number in *each* group
 
-# Experiment 3, promise
+### Experiment 3, promise
 
 \#TODO demographic info show how random it is.
 
@@ -258,29 +212,30 @@ summary(e3_mod_2)
     ## 
     ## Residuals:
     ##     Min      1Q  Median      3Q     Max 
-    ## -22.406 -14.676  -8.505   0.150 195.088 
+    ## -22.645 -14.927  -9.188  -0.139 194.850 
     ## 
     ## Coefficients:
-    ##                                  Estimate Std. Error t value Pr(>|t|)
-    ## (Intercept)                         7.435     15.479   0.480    0.632
-    ## in_treatment                        4.201      6.334   0.663    0.509
-    ## as.factor(mousetrackpad)mouse      13.162     15.522   0.848    0.399
-    ## as.factor(mousetrackpad)trackpad   -3.176     18.999  -0.167    0.868
+    ##                                  Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)                        20.386      4.612   4.421 2.89e-05 ***
+    ## in_treatment                        4.651      6.586   0.706    0.482    
+    ## as.factor(mousetrackpad)trackpad  -16.384     12.157  -1.348    0.181    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 30.3 on 88 degrees of freedom
-    ##   (3 observations deleted due to missingness)
-    ## Multiple R-squared:  0.03076,    Adjusted R-squared:  -0.002285 
-    ## F-statistic: 0.9308 on 3 and 88 DF,  p-value: 0.4294
+    ## Residual standard error: 30.81 on 85 degrees of freedom
+    ##   (7 observations deleted due to missingness)
+    ## Multiple R-squared:  0.02541,    Adjusted R-squared:  0.00248 
+    ## F-statistic: 1.108 on 2 and 85 DF,  p-value: 0.3349
 
-## Power Test
+#### 3.1 Power Test
 
 ``` r
-e3_eta = d[experiment_no==3 & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no==3 & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
+e3_ate = d[experiment_no==3 & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no==3 & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
 
 e3_sd = d[experiment_no==3, sd(bounding_box_score, na.rm=T)]
 
 
-power.t.test(delta=e3_eta, 
+power.t.test(delta=e3_ate, 
              sd=e3_sd, 
              sig.level = 0.05,
              power = 0.80,
@@ -300,7 +255,7 @@ power.t.test(delta=e3_eta,
     ## 
     ## NOTE: n is number in *each* group
 
-# Experiment 4, More data
+### Experiment 4, More data
 
 ``` r
 e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment)]
@@ -332,65 +287,215 @@ summary(e4_mod_1)
 ```
 
 ``` r
-e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(mousetrackpad, exclude=c("")))]
+#e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+is_mobile+tried=(monitor=="" &   mousetrackpad==""))]
+#summary(e4_mod_2)
+
+e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(monitor=="" &   mousetrackpad==""), bounding_box_score, in_treatment, is_mobile, WorkTimeInSeconds)] %>% 
+  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
 summary(e4_mod_2)
 ```
 
     ## 
     ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + factor(mousetrackpad, 
-    ##     exclude = c("")))
+    ## lm(formula = bounding_box_score ~ in_treatment + is_mobile + 
+    ##     tried)
     ## 
     ## Residuals:
     ##    Min     1Q Median     3Q    Max 
-    ## -60.69 -20.75  -9.76  -2.59 978.98 
+    ## -74.74 -17.37  -8.55  -2.25 930.51 
     ## 
-    ## Coefficients:
-    ##                                                Estimate Std. Error t value
-    ## (Intercept)                                      28.519      7.343   3.884
-    ## in_treatment                                    -14.367     10.197  -1.409
-    ## factor(mousetrackpad, exclude = c(""))other      -9.645     83.788  -0.115
-    ## factor(mousetrackpad, exclude = c(""))trackpad   34.924     17.224   2.028
-    ##                                                Pr(>|t|)    
-    ## (Intercept)                                     0.00013 ***
-    ## in_treatment                                    0.16002    
-    ## factor(mousetrackpad, exclude = c(""))other     0.90845    
-    ## factor(mousetrackpad, exclude = c(""))trackpad  0.04360 *  
+    ## Coefficients: (1 not defined because of singularities)
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)    25.475      7.167   3.554 0.000447 ***
+    ## in_treatment  -12.460      9.825  -1.268 0.205791    
+    ## is_mobile      51.518     16.535   3.116 0.002031 ** 
+    ## tried              NA         NA      NA       NA    
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 83.46 on 265 degrees of freedom
+    ## Residual standard error: 81.47 on 273 degrees of freedom
+    ##   (6 observations deleted due to missingness)
+    ## Multiple R-squared:  0.0415, Adjusted R-squared:  0.03448 
+    ## F-statistic:  5.91 on 2 and 273 DF,  p-value: 0.003072
+
+``` r
+e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(mousetrackpad==""), bounding_box_score, in_treatment, is_mobile, Reward)] %>% 
+  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
+summary(e4_mod_2)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = bounding_box_score ~ in_treatment + is_mobile + 
+    ##     tried)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -79.68 -17.51  -8.75  -2.47 925.57 
+    ## 
+    ## Coefficients: (1 not defined because of singularities)
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)    25.650      7.313   3.507 0.000531 ***
+    ## in_treatment  -12.388     10.058  -1.232 0.219162    
+    ## is_mobile      56.283     17.320   3.250 0.001304 ** 
+    ## tried              NA         NA      NA       NA    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 82.33 on 266 degrees of freedom
     ##   (13 observations deleted due to missingness)
-    ## Multiple R-squared:  0.0226, Adjusted R-squared:  0.01154 
-    ## F-statistic: 2.043 on 3 and 265 DF,  p-value: 0.1083
+    ## Multiple R-squared:  0.04525,    Adjusted R-squared:  0.03807 
+    ## F-statistic: 6.303 on 2 and 266 DF,  p-value: 0.002115
 
 ``` r
-stargazer(e4_mod_1, e4_mod_2, 
-          type = 'latex', header = FALSE, table.placement = 'h', 
+e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+is_mobile)]
+summary(e4_mod_2)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = bounding_box_score ~ in_treatment + is_mobile)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -75.44 -18.89  -8.88  -2.36 929.81 
+    ## 
+    ## Coefficients:
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)    27.285      7.234   3.772 0.000199 ***
+    ## in_treatment  -14.181      9.936  -1.427 0.154659    
+    ## is_mobile      50.409     16.750   3.010 0.002860 ** 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 82.55 on 274 degrees of freedom
+    ##   (5 observations deleted due to missingness)
+    ## Multiple R-squared:  0.0407, Adjusted R-squared:  0.0337 
+    ## F-statistic: 5.812 on 2 and 274 DF,  p-value: 0.003371
+
+``` r
+stargazer(e3_mod_1, e4_mod_1, 
+          type = 'text', header = FALSE, table.placement = 'h', 
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
 
+\========================================================== Dependent
+variable:  
+————————————– bounding\_box\_score  
+(1) (2)  
+———————————————————- in\_treatment 3.687 -15.895  
+(6.340) (10.064)
+
+Constant 19.028\*\*\* 33.046\*\*\*  
+(4.385) (7.078)
+
+|                                                                                                                                                                                                                                                                                           |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Data Subset All All Observations 92 277 R2 0.004 0.009 Adjusted R2 -0.007 0.005 Residual Std. Error 30.379 (df = 90) 83.748 (df = 275) F Statistic 0.338 (df = 1; 90) 2.494 (df = 1; 275) ========================================================== Note: *p\<0.1; **p\<0.05; ***p\<0.01 |
+| `r stargazer(e4_mod_1, e4_mod_2, type = 'text', header = FALSE, table.placement = 'h', add.lines = list(c("Data Subset", "All", "All", "$x==1$")))`                                                                                                                                       |
+| \============================================================== Dependent variable: —————————————— bounding\_box\_score (1) (2)                                                                                                                                                           |
+
+in\_treatment -15.895 -14.181  
+(10.064) (9.936)
+
+is\_mobile 50.409\*\*\*  
+(16.750)
+
+Constant 33.046\*\*\* 27.285\*\*\*  
+(7.078) (7.234)
+
+|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Data Subset All All Observations 277 277 R2 0.009 0.041 Adjusted R2 0.005 0.034 Residual Std. Error 83.748 (df = 275) 82.547 (df = 274) F Statistic 2.494 (df = 1; 275) 5.812\*\*\* (df = 2; 274) ============================================================== Note: *p\<0.1; **p\<0.05; ***p\<0.01                                                                                                                                                                                                                                                                                                            |
+| \`\`\`r e4\_mod\_3 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(monitor, exclude=c(NA)))\] e4\_mod\_4 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(didbf, exclude=c(NA)))\] e4\_mod\_5 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(age, exclude=NA))\] e4\_mod\_6 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(edu, exclude=NA))\] e4\_mod\_7 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(income, exclude=NA))\] |
+| stargazer(e4\_mod\_3, e4\_mod\_4, e4\_mod\_5, e4\_mod\_6, e4\_mod\_7, type = ‘text’, header = FALSE, table.placement = ‘h’, add.lines = list(c(“Data Subset”, “All”, “All”, “\(x==1\)”))) \`\`\`                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| \================================================================================================================================================== Dependent variable: —————————————————————————————————— bounding\_box\_score (1) (2) (3) (4) (5)                                                                                                                                                                                                                                                                                                                                                              |
+
+in\_treatment -11.593 -15.436 -15.364 -13.246 -15.622  
+(9.947) (10.358) (10.083) (10.205) (9.981)
+
+factor(monitor, exclude = c(NA))largescreen -36.873  
+(32.733)
+
+factor(monitor, exclude = c(NA))midsize -26.643  
+(31.902)
+
+factor(monitor, exclude = c(NA))notsure -39.773  
+(51.355)
+
+factor(monitor, exclude = c(NA))smalllaptop -28.512  
+(32.632)
+
+factor(monitor, exclude = c(NA))tablet 29.360  
+(36.186)
+
+factor(didbf, exclude = c(NA))no 10.107  
+(23.372)
+
+factor(didbf, exclude = c(NA))yes 20.584  
+(21.478)
+
+factor(age, exclude = NA)31to40 6.252  
+(12.684)
+
+factor(age, exclude = NA)4150 1.080  
+(20.540)
+
+factor(age, exclude = NA)lt21 -18.433  
+(30.134)
+
+factor(age, exclude = NA)over50 -19.531  
+(34.542)
+
+factor(edu, exclude = NA)highschool -9.949  
+(21.438)
+
+factor(edu, exclude = NA)lthighschool -20.530  
+(59.350)
+
+factor(edu, exclude = NA)masterorabove 0.497  
+(14.641)
+
+factor(edu, exclude = NA)somecollege -9.642  
+(12.514)
+
+factor(income, exclude = NA)gt30klt60k 33.347\*\*\*  
+(12.839)
+
+factor(income, exclude = NA)gt60klt90k 1.730  
+(15.998)
+
+factor(income, exclude = NA)gt90k 14.138  
+(20.109)
+
+factor(income, exclude = NA)lt10k 3.463  
+(14.509)
+
+Constant 54.891\* 14.827 31.576\*\*\* 33.822\*\*\* 20.655\*\*  
+(31.747) (20.399) (7.821) (8.470) (9.943)
+
+-----
+
+Data Subset All All x==1  
+Observations 276 269 276 275 275  
+R2 0.046 0.012 0.011 0.011 0.037  
+Adjusted R2 0.025 0.001 -0.007 -0.008 0.019  
+Residual Std. Error 81.864 (df = 269) 83.771 (df = 265) 83.205 (df =
+270) 83.383 (df = 269) 82.269 (df = 269)  
+F Statistic 2.179\*\* (df = 6; 269) 1.101 (df = 3; 265) 0.610 (df = 5;
+270) 0.573 (df = 5; 269) 2.059\* (df = 5; 269)
+==================================================================================================================================================
+Note: *p\<0.1; **p\<0.05; ***p\<0.01
+
+#### 4.1 Power Test
+
 ``` r
-e4_mod_3 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(monitor, exclude=c("")))]
-e4_mod_4 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(didbf, exclude=c("")))]
-e4_mod_5 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(age, exclude="noans"))]
-e4_mod_6 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu, exclude=""))]
-e4_mod_7 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(income, exclude=""))]
-
-stargazer(e4_mod_3, e4_mod_4, e4_mod_5, e4_mod_6, e4_mod_7,
-          type = 'latex', header = FALSE, table.placement = 'h', 
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
-```
-
-## Power Test
-
-``` r
-e4_eta = d[experiment_no %in% c(3, 4) & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no %in% c(3, 4) & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
+e4_ate = d[experiment_no %in% c(3, 4) & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no %in% c(3, 4) & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
 
 e4_sd = d[experiment_no %in% c(3, 4), sd(bounding_box_score, na.rm=T)]
 
 
-power.t.test(delta=abs(e4_eta), 
+power.t.test(delta=abs(e4_ate), 
              sd=e4_sd, 
              sig.level = 0.05,
              power = 0.80,
@@ -415,7 +520,7 @@ power_curve <- function(x) {
   result = c()
 
   for (i in 1:length(x)) {
-    new_n <- power.t.test(delta=abs(e4_eta), 
+    new_n <- power.t.test(delta=abs(e4_ate), 
              sd=e4_sd, 
              sig.level = 0.05,
              power = NULL,
@@ -432,7 +537,7 @@ sig_curve <- function(x) {
   result = c()
 
   for (i in 1:length(x)) {
-    new_n <- power.t.test(delta=abs(e4_eta), 
+    new_n <- power.t.test(delta=abs(e4_ate), 
              sd=e4_sd, 
              sig.level = NULL,
              power = 0.8,
@@ -444,422 +549,34 @@ sig_curve <- function(x) {
   
   return(result)
 }
+
+delta_curve <- function(x) {
+  result = c()
+
+  for (i in 1:length(x)) {
+    new_n <- power.t.test(delta=x[i], 
+             sd=e4_sd, 
+             sig.level = 0.05,
+             power = 0.8,
+             alternative = "one.sided",
+             n = NULL)["n"]
+    
+    result <- c(result, new_n)
+  }
+  
+  return(result)
+}
 curve(power_curve(x), 10, 1000)
 ```
 
-![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
-curve(sig_curve(x), 10, 1000)
+#curve(sig_curve(x), 10, 1000)
+#curve(delta_curve(x), 5, 20)
 ```
 
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-    
-    ## Warning in pt(qt(sig.level/tside, nu, lower.tail = FALSE), nu, ncp
-    ## = sqrt(n/tsample) * : full precision may not have been achieved in
-    ## 'pnt{final}'
-
-![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-19-2.png)<!-- -->
-
-# Experiment 5, threats don’t work
+### Experiment 5, threats don’t work
 
 ``` r
 e5_mod_1 <- d[experiment_no == 5, lm(bounding_box_score ~ in_treatment)]
@@ -886,7 +603,7 @@ summary(e5_mod_1)
     ## Multiple R-squared:  0.002916,   Adjusted R-squared:  -0.00236 
     ## F-statistic: 0.5527 on 1 and 189 DF,  p-value: 0.4582
 
-# Experiment 6, threats still don’t work
+### Experiment 6, threats still don’t work
 
 ``` r
 e6_mod_1 <- d[experiment_no == 6, lm(bounding_box_score ~ in_treatment)]
