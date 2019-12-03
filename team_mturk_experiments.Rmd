@@ -13,12 +13,12 @@ output:
       toc: true
       df_print: kable
       highlight: tango
-      
-knit: (function(inputFile, encoding) {
-  rmarkdown::render(
-    inputFile, encoding = encoding,
-    output_format ='github_document')
-    })
+
+#knit: (function(inputFile, encoding) {
+#  rmarkdown::render(
+#    inputFile, encoding = encoding,
+#    output_format ='github_document')
+#    })
   
 ---
 
@@ -55,6 +55,10 @@ remove_extra_bounding_boxes <- function(d) {
 
 d <- remove_extra_bounding_boxes(d)
 
+## Create a logical score (so that higher score is better)
+max_bounding_box_score <- ceiling(max(d[, bounding_box_score], na.rm=T))
+d[, regularized_score := (max_bounding_box_score - bounding_box_score)]
+
 ```
 
 ### Our Experiments
@@ -72,6 +76,9 @@ kable(
   d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(experiment_no, is_pilot, in_treatment)],
   caption = "Experiment Data Summary"
 )
+
+kable(summary(d[, .(bounding_box_score)]))
+
 ```
 
 
@@ -81,8 +88,10 @@ For our pilot, we gave the Turkers a negative treatment and asked that they draw
 
 We were not able to trust any ATE, but we could at least see the variance, which was exceptionally high.
 
+
 ```{r plot_experiment_1, echo=FALSE}
 # Block the results by user taking their mean score
+
 worker_mean_score <- d[experiment_no==1, .(mean_worker_score = mean(bounding_box_score), in_treatment = as.integer(median(in_treatment))), keyby=WorkerId]
 
 dev_null <- worker_mean_score[, plot(mean_worker_score, col=(in_treatment+1))]
@@ -153,28 +162,31 @@ power.t.test(delta=e2_ate,
 
 To achieve the statistical power of 0.8 at the 0.05 confidence-level with the variance we had in this experiement, we would require nearly 5,800 subjects in both control and treatment.  
 
+
 #### 2.2 Analysis
 
 With this pilot, the only covariate we had was the amount of time each Turker spent on the task. And working time acts as a control explaining away some of the variance reducing the p-value for our target feature from 0.45 to 0.39.  
 
-```{r experiment_2_regression, echo=FALSE, results='asis'}
+```{r experiment_2_regression, results='asis'}
 e2_mod_1 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment)]
 e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
 
 stargazer(e2_mod_1,  e2_mod_2,
           type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("Target Alone", "With WorkInSeconds Control"))
 ```
 
 
 ```{r experiment_2_regression_time, echo=FALSE, results='asis'}
 e2_mod_3 <- d[experiment_no==2, lm(WorkTimeInSeconds ~ in_treatment)]
-#e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
 
 stargazer(e2_mod_3,  
           type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
+
+The results suggest the negative treatment caused Turkers to spend less time on the task, but the p-value is far from statistically significant again.
 
 #### 2.3 Learnings from our second experiment.
 
@@ -192,25 +204,19 @@ In both of our pilots, we used a treatment which we hypothesized would cause the
 ```{r}
 e3_mod_1 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment)]
 
-stargazer(e3_mod_1, e2_mod_1,
+stargazer(e3_mod_1, e2_mod_1, 
           type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("Incentivized", "Negative Treatment"))
 ```
 
-The first look was disappointing, the last p-value had gone up from 0.45 in the previous experiment to 0.463 in this, but we only used a quarter the number of subjects,and  having that many fewer subjects could easily increase the probability that treatment and control look the same. 
+The first look was disappointing, the last p-value had gone up from 0.45 in the previous experiment to 0.563 in this, but we only used a quarter the number of subjects.  More concerning is the change in the treatment was estimated to change the direction of the coeffecient, and it is still positive.  
 
 #### 3.2 Analysis with covariates
 
 In this experiment we asked the Turkers to answer some questions about the device they were using, their experience doing these types of tasks and some demographic info. 
 
 ```{r}
-e3_mod_2 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+factor(monitor, exclude=NA))]
-e3_mod_3 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+factor(didbf, exclude=NA))]
-e3_mod_4 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+factor(age, exclude=NA))]
-e3_mod_5 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+factor(edu, exclude=NA))]
-e3_mod_6 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+factor(income, exclude=NA))]
-
-
 e3_mod_2 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(monitor))]
 e3_mod_3 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(didbf))]
 e3_mod_4 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(age))]
@@ -219,34 +225,55 @@ e3_mod_6 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(i
 
 stargazer(e3_mod_1, e3_mod_2, e3_mod_3, e3_mod_4, e3_mod_5, e3_mod_6, 
           type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("Target Alone", "Monitor size", "Did task before", "Age", "Education", "Income"))
 ```
 
 The only covariate which seemed to act as any type of control was the education question, though it wasn't very significant.  However, all of the coeffecients for the screensize question were negative, and by a fairly significant ammount.  The baseline value was cellphone, which can be significantly smaller than all the other types of screens.  So we tested that on its own.
+
 ```{r experiment_3_regression_cell, echo=FALSE, results='asis'}
 e3_mod_7 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+(monitor=="cellphone"))]
 
-stargazer(e3_mod_7, 
+stargazer(e3_mod_1, e3_mod_7, 
           type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("Target Alone", "Used Cellphone"))
 ```
+
+If the subject is using a cellphone to do the task, their accuracy goes down (score increases), which is intuitive.  Having cellphone as a control decreases the p-value from 0.56 to 0.33.  With more data, this could be quite a bit lower. But it still doesn't explain why subjects with more incentive are doing a poorer job.
+
+
+As with the previous experiment, we also analyzed how the treatment affected the amount of time they spent on the task.  
+
 
 ```{r experiment_3_regression_time, echo=FALSE, results='asis'}
 e3_mod_3 <- d[experiment_no==3, lm(WorkTimeInSeconds ~ in_treatment)]
-#e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
 
 stargazer(e3_mod_3, e2_mod_3,
           type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("Incentivized", "Negative Treatment"))
 ```
 
+The regression shows those in treatment on average spent 23 seconds more time, this alone is concerning, as the task itself shouldn't take that much time.  
+
+
+```{r experiment_3_summary_time, echo=FALSE, results='asis'}
+
+hist(d[experiment_no==3, WorkTimeInSeconds])
+
+```
+
+There are alot of values suggesting that Turkers are not conentrating on our task, it could be they are spawning multiple tabs.  Regardless, working time is not helpful for our experiment. 
+
 #### 3.1 Power Test
-```{r}
+
+With a lot of speculation about whether our statistical significance would go up with more data, we tested that theory by doing a power calculation. 
+
+```{r power_test_3, echo=FALSE}
 
 e3_ate = d[experiment_no==3 & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no==3 & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
-
 e3_sd = d[experiment_no==3, sd(bounding_box_score, na.rm=T)]
-
 
 power.t.test(delta=e3_ate, 
              sd=e3_sd, 
@@ -258,64 +285,69 @@ power.t.test(delta=e3_ate,
 
 ```
 
+The power calculation when using the negative treatment, telling those in treatment that they were doing work for a government surveillance system estimated we needed 5,800 subjects.  Using an incentive of possible future work as the treatment, the ATE has less variance, and estimated that we only need 835 subjects to get 0.80 statistical power. 
+
+
 ### Experiment 4, More data
 
-#TODO demographic info show how random it is.
-```{r}
-e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment)]
-summary(e4_mod_1)
+To improve the statistical power from Experiment 3, we are adding more data and sending out another 100 control tasks to Turkers and 100 with the same treatment. 
 
-#d[experiment_no %in% c(1), .(sd(bounding_box_score)), keyby=WorkerId]
-```
-
+#TODO covariate balance check, demographic info show how random it is.
 
 ```{r experiment_4_regression, echo=FALSE, results='asis'}
-e4_mod_4 <- d[experiment_no %in% c(3,4), lm(WorkTimeInSeconds ~ in_treatment)]
+e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment)]
 
-stargazer(e4_mod_4, e3_mod_3, e2_mod_3,
+stargazer(e4_mod_1, e3_mod_1,  
           type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("n=100 + n=200", "n=100"))
+```
+
+The results are much better, adding another 200 subjects helped decrease the p-value from 0.56 to 0.12, and our ATE is -15.9, a negative number means the bounding boxes from treatment are more accurate.  
+
+```{r experiment_4_regression_worktime, echo=FALSE, results='asis'}
+# Don't need this anymore
+#e4_mod_4 <- d[experiment_no %in% c(3,4), lm(WorkTimeInSeconds ~ in_treatment)]
+
+#stargazer(e4_mod_4, e3_mod_3, e2_mod_3,
+#          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+#          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
 
 ```{r}
 #e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+is_mobile+tried=(monitor=="" &	mousetrackpad==""))]
 #summary(e4_mod_2)
 
-e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(monitor=="" &	mousetrackpad==""), bounding_box_score, in_treatment, is_mobile, WorkTimeInSeconds)] %>% 
-  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
-summary(e4_mod_2)
+#e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(is.na(monitor) & is.na(mousetrackpad)), bounding_box_score, in_treatment, is_mobile, WorkTimeInSeconds)] %>% 
+#  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
+#summary(e4_mod_2)
 
-e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(mousetrackpad==""), bounding_box_score, in_treatment, is_mobile, Reward)] %>% 
-  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
-summary(e4_mod_2)
+#e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(is.na(monitor)), bounding_box_score, in_treatment, is_mobile, Reward)] %>% 
+#  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
+#summary(e4_mod_2)
 
 e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+is_mobile)]
-summary(e4_mod_2)
-```
-```{r, results='asis'}
-stargazer(e3_mod_1, e4_mod_1, 
-          type = 'text', header = FALSE, table.placement = 'h', 
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
-```
+stargazer(e4_mod_1, e4_mod_2,  
+          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("Target Alone", "Cellphone"))
 
 
-```{r, results='asis'}
-stargazer(e4_mod_1, e4_mod_2, 
-          type = 'text', header = FALSE, table.placement = 'h', 
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
 
 
-```{r, results='asis'}
-e4_mod_3 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(monitor, exclude=c(NA)))]
-e4_mod_4 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(didbf, exclude=c(NA)))]
-e4_mod_5 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(age, exclude=NA))]
-e4_mod_6 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu, exclude=NA))]
-e4_mod_7 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(income, exclude=NA))]
 
-stargazer(e4_mod_3, e4_mod_4, e4_mod_5, e4_mod_6, e4_mod_7,
-          type = 'text', header = FALSE, table.placement = 'h', 
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
+
+```{r, results='asis'}
+#e4_mod_3 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(monitor))]
+#e4_mod_4 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(didbf))]
+#e4_mod_5 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(age))]
+#e4_mod_6 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu))]
+#e4_mod_7 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(income))]
+
+#stargazer(e4_mod_3, e4_mod_4, e4_mod_5, e4_mod_6, e4_mod_7,
+#          type = 'text', header = FALSE, table.placement = 'h',  report=('vc*p'),
+#          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 
 ```
 
