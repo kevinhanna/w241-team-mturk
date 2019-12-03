@@ -119,6 +119,23 @@ get_result_data_experiment_4 <- function() {
 
 }
 
+get_result_data_experiment_5 <- function() {
+  control <- fread("../data/experiment_5/Batch_3854419_batch_results_norelation_1qn.csv")
+  control[, in_treatment := 0]
+  
+  treatment <- fread("../data/experiment_5/Batch_3853897_batch_results_oneqn_relationship.csv")
+  treatment[, in_treatment := 1]
+  
+  results <- rbind(control, treatment)
+
+  results[, experiment_no := 7]
+  results[, is_pilot := 0]
+  
+  results[, Input.image_url := "https://kstonedev.s3-us-west-2.amazonaws.com/W241/openimages/116257e7260fdb51.jpg"]
+  return(results)
+
+}
+
 get_result_data_all_experiments <- function() {
   mturk_results_pilot_1 <- get_result_data_pilot_1()
   mturk_results_pilot_2 <- get_result_data_pilot_2()
@@ -126,8 +143,9 @@ get_result_data_all_experiments <- function() {
   mturk_results_dt_2 <- get_result_data_experiment_2()
   mturk_results_dt_3 <- get_result_data_experiment_3()
   mturk_results_dt_4 <- get_result_data_experiment_4()
+  mturk_results_dt_5 <- get_result_data_experiment_5()
   
-  rbind(mturk_results_pilot_1, mturk_results_pilot_2, mturk_results_dt_1, mturk_results_dt_2, mturk_results_dt_3, mturk_results_dt_4, fill=TRUE)
+  rbind(mturk_results_pilot_1, mturk_results_pilot_2, mturk_results_dt_1, mturk_results_dt_2, mturk_results_dt_3, mturk_results_dt_4, mturk_results_dt_5, fill=TRUE)
 }
 
 

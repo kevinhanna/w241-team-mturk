@@ -42,10 +42,6 @@ library(knitr)
 # Read in all the data, we'll use the 'experiment_no' to pull the results from each experiment. 
 d <- fread("./data/experiment_all/experiment_results.csv")
 
-```
-
-```{r data_cleanup, echo=FALSE}
-
 # None of our experiments required creating multiple bounding boxes on a single image.
 # We are assuming the extra bounding boxes are mistakes and taking the better score.
 remove_extra_bounding_boxes <- function(d) {
@@ -449,4 +445,34 @@ summary(e6_mod_1)
 ```{r}
 e6_mod_2 <- d[experiment_no %in% c(5,6), lm(bounding_box_score ~ in_treatment+(Reward == "$0.05"))]
 summary(e6_mod_2)
+```
+
+
+### Experiment 7, Even MORE incentive data
+
+```{r experiment_4_regression, echo=FALSE, results='asis'}
+e7_mod_1 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment)]
+e7_mod_2 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment+is_cellphone)]
+
+stargazer(e4_mod_1, e4_mod_2, e7_mod_1, e7_mod_2, 
+          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("n=300", "n=300 and cellphone","n=700", "n=700 and cellphone"))
+
+```
+
+
+```{r}
+
+e7_ate = d[experiment_no %in% c(3, 4, 7) & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no %in% c(3, 4, 7) & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
+
+e7_sd = d[experiment_no %in% c(3, 4, 7), sd(bounding_box_score, na.rm=T)]
+
+
+power.t.test(delta=abs(e7_ate), 
+             sd=e7_sd, 
+             sig.level = 0.05,
+             power = 0.80,
+             alternative = "one.sided",
+             n = NULL)
 ```
