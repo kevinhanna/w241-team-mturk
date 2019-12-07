@@ -120,10 +120,10 @@ get_result_data_experiment_4 <- function() {
 }
 
 get_result_data_experiment_5 <- function() {
-  control <- fread("../data/experiment_5/Batch_3854419_batch_results_norelation_1qn.csv")
+  control <- fread("../data/experiment_5/Batch_3853897_batch_results_oneqn_relationship.csv")
   control[, in_treatment := 0]
   
-  treatment <- fread("../data/experiment_5/Batch_3853897_batch_results_oneqn_relationship.csv")
+  treatment <- fread("../data/experiment_5/Batch_3854419_batch_results_norelation_1qn.csv")
   treatment[, in_treatment := 1]
   
   results <- rbind(control, treatment)
@@ -259,9 +259,10 @@ extract_image_bounding_data <- function(dt) {
     
     bounding_boxes_dt$mousetrackpad<-ifelse(row$Answer._3cursor1.mouse == TRUE, "mouse", 
                       ifelse(row$Answer._3cursor2.trackpad == TRUE, "trackpad",
-                      ifelse(row$Answer._3cursor3.other == TRUE, "other","NA")))
+                      ifelse(row$Answer._3cursor3.touchscreen == TRUE, "touchscreen",
+                      ifelse(row$Answer._3cursor3.other == TRUE, "other","NA"))))
     
-    bounding_boxes_dt$age<-ifelse(row$Answer._4age1.lt21 ==TRUE, "lt21", 
+    bounding_boxes_dt$age<-ifelse(row$Answer._4age1.lt21 ==TRUE, "lto21", 
                       ifelse(row$Answer._4age2.21to30 == TRUE, "21to30",
                       ifelse(row$Answer._4age3.31to30 == TRUE, "31to40", 
                       #31to30 variable poorly named, but no impact, UI was correct. 
@@ -280,13 +281,25 @@ extract_image_bounding_data <- function(dt) {
                       ifelse(row$Answer._6edu4.fouryearcollege == TRUE, "fouryearcollege",
                       ifelse(row$Answer._6edu5.masterorabove == TRUE, "masterorabove","NA")))))
     
-    bounding_boxes_dt$is_mobile <- as.numeric((row$Answer._2monitor1.cellphone | row$Answer._2monitor2.tablet))
-    bounding_boxes_dt$is_cellphone <- as.numeric(row$Answer._2monitor1.cellphone)
     
-    bounding_boxes_dt$mousetrackpad2<-ifelse(row$Answer._3cursor1.mouse == TRUE, "mouse", 
-                      ifelse(row$Answer._3cursor2.trackpad == TRUE, "trackpad",
-                      ifelse((row$Answer._2monitor1.cellphone | row$Answer._2monitor2.tablet), "touchscreen",
-                      ifelse(row$Answer._3cursor3.other == TRUE, "other","NA"))))
+    
+    # is_mobile implies the use of cellphone or tablet
+    #bounding_boxes_dt$is_mobile <- as.numeric((row$Answer._2monitor1.cellphone | 
+    #                                             row$Answer._2monitor2.tablet | 
+    #                                             row$Answer._3cursor3.touchscreen))
+    bounding_boxes_dt$is_mobile <- bounding_boxes_dt$mousetrackpad == "touchscreen" | 
+      bounding_boxes_dt$monitor %in% c("cellphone", "tablet")
+    bounding_boxes_dt$is_cellphone <- bounding_boxes_dt$is_mobile
+    
+    # is_cellphone implies the use of cellphone only
+    #bounding_boxes_dt$is_cellphone <- as.numeric(row$Answer._2monitor1.cellphone | row$Answer._3cursor3.touchscreen)
+    
+    
+    
+#    bounding_boxes_dt$mousetrackpad2<-ifelse(row$Answer._3cursor1.mouse == TRUE, "mouse", 
+#                      ifelse(row$Answer._3cursor2.trackpad == TRUE, "trackpad",
+#                      ifelse((row$Answer._2monitor1.cellphone | row$Answer._2monitor2.tablet), "touchscreen",
+#                      ifelse(row$Answer._3cursor3.other == TRUE, "other","NA"))))
 
     
     bounding_boxes_dt[, ImageId := row[, Input.image_url]] # Column renamed
@@ -421,6 +434,19 @@ prep_experiment_4_data <- function() {
   fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_4/experiment_4_results.csv")
 }
 
+
+prep_experiment_5_data <- function() {
+
+  mturk_results_dt <-get_result_data_experiment_5()
+  
+  formatted_mturk_image_boundings_dt <- extract_image_bounding_data(mturk_results_dt)
+  formatted_mturk_image_boundings_dt[, bound_size := get_bounding_size(ImageId)]
+  formatted_mturk_image_boundings_dt[, bounding_box_score := 
+                                       score_mturk_results(formatted_mturk_image_boundings_dt, formatted_mturk_image_boundings_row)]
+  
+  fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_5/experiment_5_results.csv")
+}
+
 prep__all_experiment_data <- function() {
 
   mturk_results_dt <- get_result_data_all_experiments()
@@ -433,7 +459,7 @@ prep__all_experiment_data <- function() {
   fwrite(formatted_mturk_image_boundings_dt, "../data/experiment_all/experiment_results.csv")
 }
 
-#prep_experiment_4_data()
+#prep_experiment_5_data()
 prep__all_experiment_data()
 
 
