@@ -20,13 +20,12 @@ Therefor a **lower score is better**.  When the treatment should cause a negativ
 ```{r setup, include=FALSE}
 library(data.table)
 library(dplyr)
-library(rjson)
+#library(rjson)
 library(pwr)
 library(stargazer)
 library(knitr)
-library(kableExtra)
+#library(kableExtra)
 
-stargazer_type="latex"
 ```
 
 ```{r load_data, echo=FALSE}
@@ -46,15 +45,24 @@ d <- remove_extra_bounding_boxes(d)
 max_bounding_box_score <- ceiling(max(d[, bounding_box_score], na.rm=T))
 d[, regularized_score := (max_bounding_box_score - bounding_box_score)]
 
+
+## experiment_no doesn't make sense
+d[, dataset_no := experiment_no]
+
 ```
 
 
 ```{r formatting_helper_functions, echo=FALSE}
 
+# PDF
+stargazer_type="latex"
+
+# Markdown
+#stargazer_type="text"
+
 format_table <- function(table_d, caption = NULL) {
   kable(table_d)
 }
-
 
 ```
 
@@ -73,6 +81,17 @@ format_table <- function(table_d, caption = NULL) {
 format_table(
   d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(experiment_no, is_pilot, in_treatment)],
   caption = "Experiment Data Summary"
+)
+
+format_table(d[order(experiment_no), .("Mean Score"=mean(bounding_box_score, na.rm=T), 
+      "In Treatment"=sum(in_treatment==1), 
+      "In Control"=sum(in_treatment==0),
+      "Total"=sum(in_treatment %in% c(0,1)),
+      "Has is_mobile"=sum(is_mobile %in% c(0,1)),
+      "Reward Amount"=max(Reward), # Each only has one
+      "Standard Deviation"=sd(bounding_box_score, na.rm=T)
+      ), 
+  by=experiment_no]
 )
 
 format_table(summary(d[, .(bounding_box_score)]))
@@ -168,14 +187,14 @@ e2_ate = d[experiment_no==2 & in_treatment == 1, mean(bounding_box_score, na.rm=
 e2_sd = d[experiment_no==2, sd(bounding_box_score, na.rm=T)]
 
 
-foo = power.t.test(delta=e2_ate, 
+power_2_1 = power.t.test(delta=e2_ate, 
              sd=e2_sd, 
              sig.level = 0.05,
              power = 0.80,
              alternative = "one.sided",
              n = NULL)
 
-print(foo)
+print(power_2_1)
 ```
 
  
@@ -183,19 +202,21 @@ print(foo)
 
 #### 2.2 Analysis   
 
-With this pilot, the only covariate we had was the amount of time each Turker spent on the task. And working time acts as a control explaining away some of the variance reducing the p-value for our target feature from 0.45 to 0.39.  
+The results of our regression failed to show any reliable affect of our treatment.  The coeffecient is negative, which for our scoring means there is a positive influence from the treatment.  But with a p-value of 0.66 there no information can be gleaned from this with any confidence. 
 
 ```{r experiment_2_regression, results='asis', echo=FALSE}
 e2_mod_1 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment)]
-e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
+#e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
 
-stargazer(e2_mod_1,  e2_mod_2,
+stargazer(e2_mod_1, 
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
-          column.labels=c("Target Alone", "With WorkInSeconds Control"))
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$"))
+          )
 
 ```
 
+
+With this pilot, the only covariate we had was the amount of time each Turker spent on the task. And working time doesn't seem to be affected by our treatment. 
 
 ```{r experiment_2_regression_time, echo=FALSE, results='asis'}
 e2_mod_3 <- d[experiment_no==2, lm(WorkTimeInSeconds ~ in_treatment)]
@@ -206,6 +227,20 @@ stargazer(e2_mod_3,
 ```
 
 The results suggest the negative treatment caused Turkers to spend less time on the task, but the p-value is far from statistically significant again.
+
+
+
+```{r experiment_2_regression_test, results='asis', echo=FALSE}
+
+#e2_mod_4 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment)]
+#e2_mod_5 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment)]
+
+#stargazer(e2_mod_4,  e2_mod_5,
+#          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+#          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+#         column.labels=c("Target Alone", "With WorkInSeconds Control"))
+
+```
 
 
 #### 2.3 Learnings from our second experiment   
@@ -472,9 +507,17 @@ summary(e6_mod_1)
 ```
 
 ```{r}
-e6_mod_2 <- d[experiment_no %in% c(5,6), lm(bounding_box_score ~ in_treatment+(Reward == "$0.05"))]
-summary(e6_mod_2)
+e6_mod_2 <- d[experiment_no %in% c(5,6), lm(bounding_box_score ~ factor(Reward)+in_treatment)]
+e6_mod_3 <- d[experiment_no %in% c(3,4,5,6), lm(bounding_box_score ~ factor(Reward)+in_treatment)]
+e6_mod_4 <- d[experiment_no %in% c(3,4,5,6), lm(bounding_box_score ~ (Reward == "$0.20")+in_treatment)]
+
+
+stargazer(e6_mod_2, e6_mod_3, e6_mod_4,
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("Reward"))
 ```
+
 
 
 ### Experiment 7, Even MORE incentive data
@@ -482,12 +525,22 @@ summary(e6_mod_2)
 ```{r experiment_7_regression, echo=FALSE, results='asis'}
 e7_mod_1 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment)]
 e7_mod_2 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment+is_cellphone)]
+e7_mod_3 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment+factor(mousetrackpad))]
+e7_mod_4 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment+factor(Reward))]
+e7_mod_5 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment+factor(mousetrackpad)+factor(Reward))]
 
-stargazer(e4_mod_1, e4_mod_2, e7_mod_1, e7_mod_2, 
+stargazer(e4_mod_1, e4_mod_2, e7_mod_1, e7_mod_2, e7_mod_3,
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("n=300", "n=300 and cellphone","n=700", "n=700 and cellphone"))
 
+```
+
+```{r}
+stargazer(e7_mod_1, e7_mod_2, e7_mod_3, e7_mod_4,  e7_mod_5,
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
+          column.labels=c("n=300", "n=300 and cellphone","n=700", "n=700 and cellphone"))
 ```
 
 
