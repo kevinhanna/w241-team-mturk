@@ -2,3 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+
+.tex
+.log
+.gz
+
+./images/openimages

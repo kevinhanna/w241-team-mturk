@@ -6,9 +6,8 @@ output:
     df_print: kable
     fig_caption: yes
     highlight: tango
-    keep_tex: yes
     toc: yes
-    toc_depth: 2
+    toc_depth: 3
 ---
 
 ## Motivating Quality Work
@@ -26,6 +25,8 @@ library(pwr)
 library(stargazer)
 library(knitr)
 library(kableExtra)
+
+stargazer_type="latex"
 ```
 
 ```{r load_data, echo=FALSE}
@@ -76,13 +77,6 @@ format_table(
 
 format_table(summary(d[, .(bounding_box_score)]))
 
-#kable(summary(d[, .(bounding_box_score)]))
-
-#kable(
-#  d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(experiment_no, is_pilot, in_treatment)],
-#  caption = "Experiment Data Summary"
-#)
-
 ```
 
 
@@ -93,13 +87,13 @@ For our pilot, we gave the Turkers a negative treatment and asked that they draw
 We were not able to trust any ATE, but we could at least see the variance, which was exceptionally high.
 
 
-```{r plot_experiment_1, echo=FALSE, fig.height=6, fig.show='hold'}
+```{r plot_experiment_1, echo=FALSE, fig.height=5, fig.width=10, fig.show='hold'}
 # Block the results by user taking their mean score
 
 worker_mean_score <- d[experiment_no==1, .(mean_worker_score = mean(bounding_box_score), in_treatment = as.integer(median(in_treatment))), keyby=WorkerId]
 
 
-par(mfrow=c(2,2))
+par(mfrow=c(1,2))
 dev_null <- worker_mean_score[, 
   plot(mean_worker_score, col=(in_treatment+1), main="Distribution of Scores",
        xlab="MTurkers", ylab="Score")
@@ -115,7 +109,6 @@ dev_null <- worker_mean_score[,
 
 
 ```{r experiment_1_summary, echo=FALSE}
-
 format_table(summary(worker_mean_score[, .(mean_worker_score)]))
 format_table(worker_mean_score[, .(mean_score=mean(mean_worker_score, na.rm=T), std_dev=sd(mean_worker_score, na.rm=T)), keyby=.(in_treatment)])
 
@@ -133,11 +126,11 @@ With the first pilot behind us, we decided we needed to focus on increasing our 
 
 
 
-```{r plot_experiment_2, echo=FALSE}
+```{r plot_experiment_2, echo=FALSE, fig.height=5, fig.width=10}
 #dev_null <- d[experiment_no==2, plot(bounding_box_score, col=(in_treatment+1))]
 #dev_null <- d[experiment_no==2, plot(log(bounding_box_score), col=(in_treatment+1))]
 
-par(mfrow=c(2,2))
+par(mfrow=c(1,2))
 dev_null <- d[experiment_no==2, 
   plot(bounding_box_score, col=(in_treatment+1), main="Distribution of Scores",
        xlab="MTurkers", ylab="Score")
@@ -148,7 +141,10 @@ dev_null <- d[experiment_no==2,
        xlab="MTurkers", ylab="Log Score")
 ]
 ```
-
+  
+#### 2.1 Score Summary Statistics    
+   
+Summary Statistics for Score
 
 ```{r experiment_2_summary, echo=FALSE}
 format_table(summary(d[experiment_no==2, .(bounding_box_score)]))
@@ -160,14 +156,11 @@ format_table(d[experiment_no==2, .(mean_score=mean(bounding_box_score, na.rm=T),
 ```
 
 
+Our coefficient for in treatment was still more likely due to random noise than not.  
 
+#### 2.1 Power Test   
 
-
-Even with a p-value of 0.655, this was progress.  Our coefficient for in treatment was still more likely due to random noise than not.  
-
-#### 2.1 Power Test
-
-
+To achieve the statistical power of 0.8 at the 0.05 confidence-level with the variance we had in this experiement, we would require nearly 5,800 subjects in both control and treatment. 
 
 ```{r experiment_2_power_test, echo=FALSE}
 
@@ -175,29 +168,29 @@ e2_ate = d[experiment_no==2 & in_treatment == 1, mean(bounding_box_score, na.rm=
 e2_sd = d[experiment_no==2, sd(bounding_box_score, na.rm=T)]
 
 
-power.t.test(delta=e2_ate, 
+foo = power.t.test(delta=e2_ate, 
              sd=e2_sd, 
              sig.level = 0.05,
              power = 0.80,
              alternative = "one.sided",
              n = NULL)
 
-
+print(foo)
 ```
 
-To achieve the statistical power of 0.8 at the 0.05 confidence-level with the variance we had in this experiement, we would require nearly 5,800 subjects in both control and treatment.  
+ 
 
 
-#### 2.2 Analysis
+#### 2.2 Analysis   
 
 With this pilot, the only covariate we had was the amount of time each Turker spent on the task. And working time acts as a control explaining away some of the variance reducing the p-value for our target feature from 0.45 to 0.39.  
 
-```{r experiment_2_regression, results='asis'}
+```{r experiment_2_regression, results='asis', echo=FALSE}
 e2_mod_1 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment)]
 e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
 
 stargazer(e2_mod_1,  e2_mod_2,
-          type = 'latex', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Target Alone", "With WorkInSeconds Control"))
 
@@ -208,30 +201,33 @@ stargazer(e2_mod_1,  e2_mod_2,
 e2_mod_3 <- d[experiment_no==2, lm(WorkTimeInSeconds ~ in_treatment)]
 
 stargazer(e2_mod_3,  
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
 
 The results suggest the negative treatment caused Turkers to spend less time on the task, but the p-value is far from statistically significant again.
 
-#### 2.3 Learnings from our second experiment.
+
+#### 2.3 Learnings from our second experiment   
 
 The estimated 11,600 subjects required to achieve the statistical power we needed was far too many, 
 With a p-value of 0.389, even with the 11,600 subjects, we weren't likely to find a statistically significant ATE.  We need to change our experiment and collect more covariates. 
 
 
 
-### Experiment 3, incentive of future work.  
+### Experiment 3, incentive of future work  
 
 In both of our pilots, we used a treatment which we hypothesized would cause the Turkers in treatment to work less hard, and the ATE was positive, which in our scoring means the bounding was less accurate.  We also wanted to test if a positive treatment would have a larger ATE, so the Turkers in treatment were told we were looking for Turkers to perform some future work with the hypothesis that if the Turkers though of the task as a test with the incentive of future work they would try harder.  So we ran a small experiment to test this theory.
 
-#### 3.1 Simple regression analysis
+#### 3.1 Simple regression analysis   
 
-```{r}
+
+
+```{r 3_1_simple_regression, echo=FALSE, results='asis'}
 e3_mod_1 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment)]
 
 stargazer(e3_mod_1, e2_mod_1, 
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Incentivized", "Negative Treatment"))
 ```
@@ -242,7 +238,7 @@ The first look was disappointing, the last p-value had gone up from 0.45 in the 
 
 In this experiment we asked the Turkers to answer some questions about the device they were using, their experience doing these types of tasks and some demographic info. 
 
-```{r}
+```{r 3_2_covariates, echo=FALSE, results='asis'}
 e3_mod_2 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(monitor))]
 e3_mod_3 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(didbf))]
 e3_mod_4 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(age))]
@@ -250,7 +246,7 @@ e3_mod_5 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(e
 e3_mod_6 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+as.factor(income))]
 
 stargazer(e3_mod_1, e3_mod_2, e3_mod_3, e3_mod_4, e3_mod_5, e3_mod_6, 
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Target Alone", "Monitor size", "Did task before", "Age", "Education", "Income"))
 ```
@@ -261,7 +257,7 @@ The only covariate which seemed to act as any type of control was the education 
 e3_mod_7 <- d[experiment_no==3, lm(bounding_box_score ~ in_treatment+(monitor=="cellphone"))]
 
 stargazer(e3_mod_1, e3_mod_7, 
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Target Alone", "Used Cellphone"))
 ```
@@ -276,7 +272,7 @@ As with the previous experiment, we also analyzed how the treatment affected the
 e3_mod_3 <- d[experiment_no==3, lm(WorkTimeInSeconds ~ in_treatment)]
 
 stargazer(e3_mod_3, e2_mod_3,
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Incentivized", "Negative Treatment"))
 ```
@@ -318,16 +314,19 @@ The power calculation when using the negative treatment, telling those in treatm
 
 To improve the statistical power from Experiment 3, we are adding more data and sending out another 100 control tasks to Turkers and 100 with the same treatment. 
 
-#TODO covariate balance check, demographic info show how random it is.
+TODO covariate balance check, demographic info show how random it is.
 
-```{r experiment_4_regression, echo=FALSE, results='asis'}
+Foo
+
+```{r experiment_4_regression, results='asis', echo=FALSE}
 e4_mod_1 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment)]
 
 stargazer(e4_mod_1, e3_mod_1,  
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("n=100 + n=200", "n=100"))
 ```
+
 
 The results are much better, adding another 200 subjects helped decrease the p-value from 0.56 to 0.12, and our ATE is -15.9, a negative number means the bounding boxes from treatment are more accurate.  
 
@@ -336,11 +335,11 @@ The results are much better, adding another 200 subjects helped decrease the p-v
 #e4_mod_4 <- d[experiment_no %in% c(3,4), lm(WorkTimeInSeconds ~ in_treatment)]
 
 #stargazer(e4_mod_4, e3_mod_3, e2_mod_3,
-#          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+#          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
 #          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
 ```
 
-```{r}
+```{r experiment_4_compare_previous, echo=FALSE, results='asis'}
 #e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+is_mobile+tried=(monitor=="" &	mousetrackpad==""))]
 #summary(e4_mod_2)
 
@@ -348,13 +347,13 @@ The results are much better, adding another 200 subjects helped decrease the p-v
 #  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
 #summary(e4_mod_2)
 
-#e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(is.na(monitor)), bounding_box_score, in_treatment, is_mobile, Reward)] %>% 
-#  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
-#summary(e4_mod_2)
+e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(is.na(monitor)), bounding_box_score, in_treatment, is_mobile, Reward)] %>% 
+  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
+summary(e4_mod_2)
 
 e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+is_mobile)]
 stargazer(e4_mod_1, e4_mod_2,  
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Target Alone", "Cellphone"))
 
@@ -485,14 +484,14 @@ e7_mod_1 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment)
 e7_mod_2 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment+is_cellphone)]
 
 stargazer(e4_mod_1, e4_mod_2, e7_mod_1, e7_mod_2, 
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("n=300", "n=300 and cellphone","n=700", "n=700 and cellphone"))
 
 ```
 
 
-```{r}
+```{r, echo=FALSE}
 
 e7_ate = d[experiment_no %in% c(3, 4, 7) & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no %in% c(3, 4, 7) & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
 
