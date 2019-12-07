@@ -1,25 +1,14 @@
 ---
 title: "Team mTurk - Motivating Quality Work"
 author: "Kevin Hanna, Kevin Stone, Changjing Zhao"
-output: 
-    github_document: 
-      toc: true
-      df_print: kable
-    pdf_document: 
-      toc: true
-      df_print: kable
-      highlight: tango
-    html_document:
-      toc: true
-      df_print: kable
-      highlight: tango
-
-#knit: (function(inputFile, encoding) {
-#  rmarkdown::render(
-#    inputFile, encoding = encoding,
-#    output_format ='github_document')
-#    })
-  
+output:
+  pdf_document: 
+    df_print: kable
+    fig_caption: yes
+    highlight: tango
+    keep_tex: yes
+    toc: yes
+    toc_depth: 2
 ---
 
 ## Motivating Quality Work
@@ -36,6 +25,7 @@ library(rjson)
 library(pwr)
 library(stargazer)
 library(knitr)
+library(kableExtra)
 ```
 
 ```{r load_data, echo=FALSE}
@@ -57,6 +47,17 @@ d[, regularized_score := (max_bounding_box_score - bounding_box_score)]
 
 ```
 
+
+```{r formatting_helper_functions, echo=FALSE}
+
+format_table <- function(table_d, caption = NULL) {
+  kable(table_d)
+}
+
+
+```
+
+
 ### Our Experiments
 
 
@@ -68,12 +69,19 @@ d[, regularized_score := (max_bounding_box_score - bounding_box_score)]
 6. Experiment - Bound a single image with negative treatment, increased reward to 5 cents (Threat of not paying for poor performance)
 
 ```{r data_summary, echo=FALSE}
-kable(
+format_table(
   d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(experiment_no, is_pilot, in_treatment)],
   caption = "Experiment Data Summary"
 )
 
-kable(summary(d[, .(bounding_box_score)]))
+format_table(summary(d[, .(bounding_box_score)]))
+
+#kable(summary(d[, .(bounding_box_score)]))
+
+#kable(
+#  d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(experiment_no, is_pilot, in_treatment)],
+#  caption = "Experiment Data Summary"
+#)
 
 ```
 
@@ -85,21 +93,31 @@ For our pilot, we gave the Turkers a negative treatment and asked that they draw
 We were not able to trust any ATE, but we could at least see the variance, which was exceptionally high.
 
 
-```{r plot_experiment_1, echo=FALSE}
+```{r plot_experiment_1, echo=FALSE, fig.height=6, fig.show='hold'}
 # Block the results by user taking their mean score
 
 worker_mean_score <- d[experiment_no==1, .(mean_worker_score = mean(bounding_box_score), in_treatment = as.integer(median(in_treatment))), keyby=WorkerId]
 
-dev_null <- worker_mean_score[, plot(mean_worker_score, col=(in_treatment+1))]
-dev_null <- worker_mean_score[, plot(log(mean_worker_score), col=(in_treatment+1))]
+
+par(mfrow=c(2,2))
+dev_null <- worker_mean_score[, 
+  plot(mean_worker_score, col=(in_treatment+1), main="Distribution of Scores",
+       xlab="MTurkers", ylab="Score")
+]
+
+dev_null <- worker_mean_score[, 
+  plot(log(mean_worker_score), col=(in_treatment+1), main="Distribution of Log Scores",
+       xlab="MTurkers", ylab="Log Score")
+]
+
 
 ```
 
 
 ```{r experiment_1_summary, echo=FALSE}
 
-kable(summary(worker_mean_score[, .(mean_worker_score)]))
-kable(worker_mean_score[, .(mean_score=mean(mean_worker_score, na.rm=T), std_dev=sd(mean_worker_score, na.rm=T)), keyby=.(in_treatment)])
+format_table(summary(worker_mean_score[, .(mean_worker_score)]))
+format_table(worker_mean_score[, .(mean_score=mean(mean_worker_score, na.rm=T), std_dev=sd(mean_worker_score, na.rm=T)), keyby=.(in_treatment)])
 
 ```
 
@@ -116,18 +134,29 @@ With the first pilot behind us, we decided we needed to focus on increasing our 
 
 
 ```{r plot_experiment_2, echo=FALSE}
-dev_null <- d[experiment_no==2, plot(bounding_box_score, col=(in_treatment+1))]
-dev_null <- d[experiment_no==2, plot(log(bounding_box_score), col=(in_treatment+1))]
+#dev_null <- d[experiment_no==2, plot(bounding_box_score, col=(in_treatment+1))]
+#dev_null <- d[experiment_no==2, plot(log(bounding_box_score), col=(in_treatment+1))]
+
+par(mfrow=c(2,2))
+dev_null <- d[experiment_no==2, 
+  plot(bounding_box_score, col=(in_treatment+1), main="Distribution of Scores",
+       xlab="MTurkers", ylab="Score")
+]
+
+dev_null <- d[experiment_no==2, 
+  plot(log(bounding_box_score), col=(in_treatment+1), main="Distribution of Log Scores",
+       xlab="MTurkers", ylab="Log Score")
+]
 ```
 
 
 ```{r experiment_2_summary, echo=FALSE}
-summary(d[experiment_no==2, .(bounding_box_score)])
+format_table(summary(d[experiment_no==2, .(bounding_box_score)]))
 ```
 
 ```{r experiment_2_summary_groups, echo=FALSE}
 
-kable(d[experiment_no==2, .(mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(in_treatment)])
+format_table(d[experiment_no==2, .(mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(in_treatment)])
 ```
 
 
@@ -168,9 +197,10 @@ e2_mod_1 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment)]
 e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
 
 stargazer(e2_mod_1,  e2_mod_2,
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type = 'latex', header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Target Alone", "With WorkInSeconds Control"))
+
 ```
 
 
@@ -450,7 +480,7 @@ summary(e6_mod_2)
 
 ### Experiment 7, Even MORE incentive data
 
-```{r experiment_4_regression, echo=FALSE, results='asis'}
+```{r experiment_7_regression, echo=FALSE, results='asis'}
 e7_mod_1 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment)]
 e7_mod_2 <- d[experiment_no %in% c(3,4,7), lm(bounding_box_score ~ in_treatment+is_cellphone)]
 

@@ -8,10 +8,6 @@ Kevin Hanna, Kevin Stone, Changjing Zhao
       - [Our Experiments](#our-experiments)
       - [Experiment 1, our first pilot](#experiment-1-our-first-pilot)
       - [Experiment 2, our second pilot](#experiment-2-our-second-pilot)
-      - [Experiment 5, threats don’t
-        work](#experiment-5-threats-dont-work)
-      - [Experiment 6, threats still don’t
-        work](#experiment-6-threats-still-dont-work)
 
 ## Motivating Quality Work
 
@@ -37,32 +33,741 @@ hypothesis is correct.
 6.  Experiment - Bound a single image with negative treatment, increased
     reward to 5 cents (Threat of not paying for poor performance)
 
-| experiment\_no | is\_pilot | in\_treatment | count | mean\_score |  std\_dev |
-| -------------: | --------: | ------------: | ----: | ----------: | --------: |
-|              1 |         1 |             0 |   397 |   137.60402 | 295.29711 |
-|              1 |         1 |             1 |   396 |   136.39470 | 296.29412 |
-|              2 |         1 |             0 |   187 |    15.25847 |  36.79851 |
-|              2 |         1 |             1 |   189 |    17.09362 |  42.27343 |
-|              3 |         0 |             0 |    48 |    19.02776 |  23.08104 |
-|              3 |         0 |             1 |    47 |    22.71446 |  36.73351 |
-|              4 |         0 |             0 |    93 |    40.35981 | 139.47131 |
-|              4 |         0 |             1 |    94 |    14.51884 |  25.36227 |
-|              5 |         0 |             0 |    96 |    13.55187 |  23.01864 |
-|              5 |         0 |             1 |    97 |    11.61424 |  11.00214 |
-|              6 |         0 |             0 |    94 |    13.56319 |  20.70507 |
-|              6 |         0 |             1 |    92 |    13.15357 |  17.04807 |
+<table>
 
-Experiment Data Summary
+<thead>
 
-|  | bounding\_box\_score |
-|  | :------------------- |
-|  | Min. : 1.343         |
-|  | 1st Qu.: 7.136       |
-|  | Median : 13.582      |
-|  | Mean : 69.490        |
-|  | 3rd Qu.: 31.384      |
-|  | Max. :1063.693       |
-|  | NA’s :11             |
+<tr>
+
+<th style="text-align:right;">
+
+experiment\_no
+
+</th>
+
+<th style="text-align:right;">
+
+is\_pilot
+
+</th>
+
+<th style="text-align:right;">
+
+in\_treatment
+
+</th>
+
+<th style="text-align:right;">
+
+count
+
+</th>
+
+<th style="text-align:right;">
+
+mean\_score
+
+</th>
+
+<th style="text-align:right;">
+
+std\_dev
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+397
+
+</td>
+
+<td style="text-align:right;">
+
+137.60402
+
+</td>
+
+<td style="text-align:right;">
+
+295.29711
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+396
+
+</td>
+
+<td style="text-align:right;">
+
+136.39470
+
+</td>
+
+<td style="text-align:right;">
+
+296.29412
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+187
+
+</td>
+
+<td style="text-align:right;">
+
+15.25847
+
+</td>
+
+<td style="text-align:right;">
+
+36.79851
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+2
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+189
+
+</td>
+
+<td style="text-align:right;">
+
+17.09362
+
+</td>
+
+<td style="text-align:right;">
+
+42.27343
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+3
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+48
+
+</td>
+
+<td style="text-align:right;">
+
+19.02776
+
+</td>
+
+<td style="text-align:right;">
+
+23.08104
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+3
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+47
+
+</td>
+
+<td style="text-align:right;">
+
+22.71446
+
+</td>
+
+<td style="text-align:right;">
+
+36.73351
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+4
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+93
+
+</td>
+
+<td style="text-align:right;">
+
+40.35981
+
+</td>
+
+<td style="text-align:right;">
+
+139.47131
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+4
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+94
+
+</td>
+
+<td style="text-align:right;">
+
+14.51884
+
+</td>
+
+<td style="text-align:right;">
+
+25.36227
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+5
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+96
+
+</td>
+
+<td style="text-align:right;">
+
+13.55187
+
+</td>
+
+<td style="text-align:right;">
+
+23.01864
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+5
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+97
+
+</td>
+
+<td style="text-align:right;">
+
+11.61424
+
+</td>
+
+<td style="text-align:right;">
+
+11.00214
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+6
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+94
+
+</td>
+
+<td style="text-align:right;">
+
+13.56319
+
+</td>
+
+<td style="text-align:right;">
+
+20.70507
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+6
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+92
+
+</td>
+
+<td style="text-align:right;">
+
+13.15357
+
+</td>
+
+<td style="text-align:right;">
+
+17.04807
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+7
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+191
+
+</td>
+
+<td style="text-align:right;">
+
+13.17927
+
+</td>
+
+<td style="text-align:right;">
+
+16.12633
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+7
+
+</td>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+181
+
+</td>
+
+<td style="text-align:right;">
+
+21.52917
+
+</td>
+
+<td style="text-align:right;">
+
+98.68055
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+</th>
+
+<th style="text-align:left;">
+
+bounding\_box\_score
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Min. : 1.000
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+1st Qu.: 6.681
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Median : 12.414
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Mean : 60.752
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+3rd Qu.: 27.917
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Max. :1284.400
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+NA’s :18
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 ### Experiment 1, our first pilot
 
@@ -81,22 +786,209 @@ control.
 We were not able to trust any ATE, but we could at least see the
 variance, which was exceptionally high.
 
-![](team_mturk_experiments_files/figure-gfm/plot_experiment_1-1.png)<!-- -->![](team_mturk_experiments_files/figure-gfm/plot_experiment_1-2.png)<!-- -->
+![](team_mturk_experiments_files/figure-gfm/plot_experiment_1-1.png)<!-- -->
 
-|  | mean\_worker\_score |
-|  | :------------------ |
-|  | Min. : 5.003        |
-|  | 1st Qu.: 25.938     |
-|  | Median :119.894     |
-|  | Mean :135.288       |
-|  | 3rd Qu.:178.160     |
-|  | Max. :994.601       |
-|  | NA’s :1             |
+<table>
 
-| in\_treatment | mean\_score | std\_dev |
-| ------------: | ----------: | -------: |
-|             0 |    146.7838 | 125.4300 |
-|             1 |    118.8101 | 190.9985 |
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+</th>
+
+<th style="text-align:left;">
+
+mean\_worker\_score
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Min. : 5.003
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+1st Qu.: 25.938
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Median :119.894
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Mean :135.288
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+3rd Qu.:178.160
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Max. :994.601
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+NA’s :1
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:right;">
+
+in\_treatment
+
+</th>
+
+<th style="text-align:right;">
+
+mean\_score
+
+</th>
+
+<th style="text-align:right;">
+
+std\_dev
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+146.7838
+
+</td>
+
+<td style="text-align:right;">
+
+125.4300
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+118.8101
+
+</td>
+
+<td style="text-align:right;">
+
+190.9985
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 ``` r
 #TODO Gauge if effort decreases with more HITTs
@@ -108,21 +1000,209 @@ With the first pilot behind us, we decided we needed to focus on
 increasing our statistical power and hypothesized that having more
 subjects with fewer experiments would provide more statistical power.
 
-![](team_mturk_experiments_files/figure-gfm/plot_experiment_2-1.png)<!-- -->![](team_mturk_experiments_files/figure-gfm/plot_experiment_2-2.png)<!-- -->
+![](team_mturk_experiments_files/figure-gfm/plot_experiment_2-1.png)<!-- -->
 
-    ##  bounding_box_score
-    ##  Min.   :  1.423   
-    ##  1st Qu.:  5.054   
-    ##  Median :  8.320   
-    ##  Mean   : 16.178   
-    ##  3rd Qu.: 13.498   
-    ##  Max.   :489.540   
-    ##  NA's   :3
+<table>
 
-| in\_treatment | mean\_score | std\_dev |
-| ------------: | ----------: | -------: |
-|             0 |    15.25847 | 36.79851 |
-|             1 |    17.09362 | 42.27343 |
+<thead>
+
+<tr>
+
+<th style="text-align:left;">
+
+</th>
+
+<th style="text-align:left;">
+
+bounding\_box\_score
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Min. : 1.423
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+1st Qu.: 5.054
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Median : 8.320
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Mean : 16.178
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+3rd Qu.: 13.498
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+Max. :489.540
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+</td>
+
+<td style="text-align:left;">
+
+NA’s :3
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th style="text-align:right;">
+
+in\_treatment
+
+</th>
+
+<th style="text-align:right;">
+
+mean\_score
+
+</th>
+
+<th style="text-align:right;">
+
+std\_dev
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td style="text-align:right;">
+
+0
+
+</td>
+
+<td style="text-align:right;">
+
+15.25847
+
+</td>
+
+<td style="text-align:right;">
+
+36.79851
+
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:right;">
+
+1
+
+</td>
+
+<td style="text-align:right;">
+
+17.09362
+
+</td>
+
+<td style="text-align:right;">
+
+42.27343
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 Even with a p-value of 0.655, this was progress. Our coefficient for in
 treatment was still more likely due to random noise than not.
@@ -157,30 +1237,14 @@ e2_mod_1 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment)]
 e2_mod_2 <- d[experiment_no==2, lm(bounding_box_score ~ in_treatment+WorkTimeInSeconds)]
 
 stargazer(e2_mod_1,  e2_mod_2,
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
+          type = 'latex', header = FALSE, table.placement = 'h', report=('vc*p'),
           add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Target Alone", "With WorkInSeconds Control"))
 ```
 
-\==================================================================
-Dependent variable:  
-———————————————- bounding\_box\_score  
-Target Alone With WorkInSeconds Control (1) (2)  
-—————————————————————— in\_treatment 1.835 1.903  
-p = 0.656 p = 0.644
-
-WorkTimeInSeconds 0.010  
-p = 0.426
-
-Constant 15.258\*\*\* 14.441\*\*\*  
-p = 0.00000 p = 0.00001
-
-|                                                                                                                                                                                                                                                                                                       |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Data Subset All All Observations 373 373 R2 0.001 0.002 Adjusted R2 -0.002 -0.003 Residual Std. Error 39.638 (df = 371) 39.657 (df = 370) F Statistic 0.200 (df = 1; 371) 0.418 (df = 2; 370) ================================================================== Note: *p\<0.1; **p\<0.05; ***p\<0.01 |
-| \=============================================== Dependent variable: ————————— WorkTimeInSeconds                                                                                                                                                                                                      |
-
-in\_treatment -7.720  
+\=============================================== Dependent variable:  
+————————— WorkTimeInSeconds  
+———————————————– in\_treatment -7.720  
 p = 0.663
 
 Constant 86.059\*\*\*  
@@ -250,89 +1314,79 @@ p = 0.116 p = 0.563
 Constant 33.046\*\*\* 19.028\*\*\*  
 p = 0.00001 p = 0.00004
 
+|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Data Subset All All Observations 277 92 R2 0.009 0.004 Adjusted R2 0.005 -0.007 Residual Std. Error 83.748 (df = 275) 30.379 (df = 90) F Statistic 2.494 (df = 1; 275) 0.338 (df = 1; 90) ========================================================== Note: *p\<0.1; **p\<0.05; ***p\<0.01                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| The results are much better, adding another 200 subjects helped decrease the p-value from 0.56 to 0.12, and our ATE is -15.9, a negative number means the bounding boxes from treatment are more accurate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| \`\`\`r \#e4\_mod\_2 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+is\_mobile+tried=(monitor=="" & mousetrackpad==""))\] \#summary(e4\_mod\_2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| \#e4\_mod\_2 \<- d\[experiment\_no %in% c(3,4), .(tried=as.numeric(is.na(monitor) & is.na(mousetrackpad)), bounding\_box\_score, in\_treatment, is\_mobile, WorkTimeInSeconds)\] %\>% \# .\[, lm(bounding\_box\_score \~ in\_treatment+is\_mobile+tried)\] \#summary(e4\_mod\_2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| \#e4\_mod\_2 \<- d\[experiment\_no %in% c(3,4), .(tried=as.numeric(is.na(monitor)), bounding\_box\_score, in\_treatment, is\_mobile, Reward)\] %\>% \# .\[, lm(bounding\_box\_score \~ in\_treatment+is\_mobile+tried)\] \#summary(e4\_mod\_2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| e4\_mod\_2 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+is\_mobile)\] stargazer(e4\_mod\_1, e4\_mod\_2, type = ‘text’, header = FALSE, table.placement = ‘h’, report=(’vc\*p’), add.lines = list(c(“Data Subset”, “All”, “All”, “\(x==1\)”)), column.labels=c(“Target Alone”, “Cellphone”)) \`\`\`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `## ## ============================================================== ##                                Dependent variable: ##                     ------------------------------------------ ##                                 bounding_box_score ##                        Target Alone           Cellphone ##                             (1)                  (2) ## -------------------------------------------------------------- ## in_treatment              -15.895              -14.181 ##                          p = 0.116            p = 0.155 ## ## is_mobile                                     50.409*** ##                                               p = 0.003 ## ## Constant                 33.046***            27.285*** ##                         p = 0.00001           p = 0.0002 ## ## -------------------------------------------------------------- ## Data Subset                 All                  All ## Observations                277                  277 ## R2                         0.009                0.041 ## Adjusted R2                0.005                0.034 ## Residual Std. Error  83.748 (df = 275)    82.547 (df = 274) ## F Statistic         2.494 (df = 1; 275) 5.812*** (df = 2; 274) ## ============================================================== ## Note:                              *p<0.1; **p<0.05; ***p<0.01` |
+| \`\`\`r \#e4\_mod\_3 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(monitor))\] \#e4\_mod\_4 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(didbf))\] \#e4\_mod\_5 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(age))\] \#e4\_mod\_6 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(edu))\] \#e4\_mod\_7 \<- d\[experiment\_no %in% c(3,4), lm(bounding\_box\_score \~ in\_treatment+factor(income))\]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| \#stargazer(e4\_mod\_3, e4\_mod\_4, e4\_mod\_5, e4\_mod\_6, e4\_mod\_7, \# type = ‘text’, header = FALSE, table.placement = ‘h’, report=(’vc\*p’), \# add.lines = list(c(“Data Subset”, “All”, “All”, “\(x==1\)”))) \`\`\`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| \#\#\#\# 4.1 Power Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| \`\`\`r e4\_ate = d\[experiment\_no %in% c(3, 4) & in\_treatment == 1, mean(bounding\_box\_score, na.rm=T)\] - d\[experiment\_no %in% c(3, 4) & in\_treatment == 0, mean(bounding\_box\_score, na.rm=T)\]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| e4\_sd = d\[experiment\_no %in% c(3, 4), sd(bounding\_box\_score, na.rm=T)\]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| power.t.test(delta=abs(e4\_ate), sd=e4\_sd, sig.level = 0.05, power = 0.80, alternative = “one.sided”, n = NULL) \`\`\`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `## ##      Two-sample t test power calculation ## ##               n = 345.7973 ##           delta = 15.89495 ##              sd = 83.97393 ##       sig.level = 0.05 ##           power = 0.8 ##     alternative = one.sided ## ## NOTE: n is number in *each* group`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| \`\`\`r power\_curve \<- function(x) { result = c()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| for (i in 1:length(x)) { new\_n \<- power.t.test(delta=abs(e4\_ate), sd=e4\_sd, sig.level = 0.05, power = NULL, alternative = “one.sided”, n = x\[i\])\[“power”\]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| result \<- c(result, new\_n) }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| return(result) }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| sig\_curve \<- function(x) { result = c()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| for (i in 1:length(x)) { new\_n \<- power.t.test(delta=abs(e4\_ate), sd=e4\_sd, sig.level = NULL, power = 0.8, alternative = “one.sided”, n = x\[i\])\[“sig.level”\]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| result \<- c(result, new\_n) }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| return(result) }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| delta\_curve \<- function(x) { result = c()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| for (i in 1:length(x)) { new\_n \<- power.t.test(delta=x\[i\], sd=e4\_sd, sig.level = 0.05, power = 0.8, alternative = “one.sided”, n = NULL)\[“n”\]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| result \<- c(result, new\_n) }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| return(result) } curve(power\_curve(x), 10, 1000) \`\`\`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `r #curve(sig_curve(x), 10, 1000) #curve(delta_curve(x), 5, 20)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| \#\#\# Experiment 5, threats don’t work                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `r e5_mod_1 <- d[experiment_no == 5, lm(bounding_box_score ~ in_treatment)] summary(e5_mod_1)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `## ## Call: ## lm(formula = bounding_box_score ~ in_treatment) ## ## Residuals: ##     Min      1Q  Median      3Q     Max ## -12.005  -7.388  -4.123   0.854 193.311 ## ## Coefficients: ##              Estimate Std. Error t value Pr(>\|t\|) ## (Intercept)    13.552      1.848   7.334 6.38e-12 *** ## in_treatment   -1.938      2.606  -0.743    0.458 ## --- ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 ## ## Residual standard error: 18.01 on 189 degrees of freedom ##   (2 observations deleted due to missingness) ## Multiple R-squared:  0.002916,   Adjusted R-squared:  -0.00236 ## F-statistic: 0.5527 on 1 and 189 DF,  p-value: 0.4582`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| \#\#\# Experiment 6, threats still don’t work                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `r e6_mod_1 <- d[experiment_no == 6, lm(bounding_box_score ~ in_treatment)] summary(e6_mod_1)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `## ## Call: ## lm(formula = bounding_box_score ~ in_treatment) ## ## Residuals: ##    Min     1Q Median     3Q    Max ## -12.02  -8.64  -6.39  -1.38 107.83 ## ## Coefficients: ##              Estimate Std. Error t value Pr(>\|t\|) ## (Intercept)   13.5632     1.9581   6.927 6.99e-11 *** ## in_treatment  -0.4096     2.7842  -0.147    0.883 ## --- ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 ## ## Residual standard error: 18.98 on 184 degrees of freedom ## Multiple R-squared:  0.0001176,  Adjusted R-squared:  -0.005317 ## F-statistic: 0.02164 on 1 and 184 DF,  p-value: 0.8832`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `r e6_mod_2 <- d[experiment_no %in% c(5,6), lm(bounding_box_score ~ in_treatment+(Reward == "$0.05"))] summary(e6_mod_2)`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `## ## Call: ## lm(formula = bounding_box_score ~ in_treatment + (Reward == "$0.05")) ## ## Residuals: ##     Min      1Q  Median      3Q     Max ## -12.399  -8.042  -5.148  -0.011 193.690 ## ## Coefficients: ##                       Estimate Std. Error t value Pr(>\|t\|) ## (Intercept)            13.1730     1.6439   8.013 1.44e-14 *** ## in_treatment           -1.1838     1.9033  -0.622    0.534 ## Reward == "$0.05"TRUE   0.7731     1.9034   0.406    0.685 ## --- ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 ## ## Residual standard error: 18.48 on 374 degrees of freedom ##   (2 observations deleted due to missingness) ## Multiple R-squared:  0.001484,   Adjusted R-squared:  -0.003855 ## F-statistic: 0.278 on 2 and 374 DF,  p-value: 0.7575`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| \#\#\# Experiment 7, Even MORE incentive data                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| \====================================================================================================== Dependent variable: ———————————————————————————- bounding\_box\_score n=300 n=300 and cellphone n=700 n=700 and cellphone (1) (2) (3) (4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+
+in\_treatment -15.895 -14.181 -2.020 -16.466  
+p = 0.116 p = 0.155 p = 0.738 p = 0.105
+
+is\_mobile 50.409\*\*\*  
+p = 0.003
+
+is\_cellphone 25.693  
+p = 0.426
+
+Constant 33.046\*\*\* 27.285\*\*\* 21.633\*\*\* 32.679\*\*\*  
+p = 0.00001 p = 0.0002 p = 0.00000 p = 0.00001
+
 -----
 
-Data Subset All All  
-Observations 277 92  
-R2 0.009 0.004  
-Adjusted R2 0.005 -0.007  
-Residual Std. Error 83.748 (df = 275) 30.379 (df = 90) F Statistic 2.494
-(df = 1; 275) 0.338 (df = 1; 90)
-========================================================== Note:
-*p\<0.1; **p\<0.05; ***p\<0.01
-
-The results are much better, adding another 200 subjects helped decrease
-the p-value from 0.56 to 0.12, and our ATE is -15.9, a negative number
-means the bounding boxes from treatment are more accurate.
+Data Subset All All x==1  
+Observations 277 277 642 277  
+R2 0.009 0.041 0.0002 0.011  
+Adjusted R2 0.005 0.034 -0.001 0.004  
+Residual Std. Error 83.748 (df = 275) 82.547 (df = 274) 76.188 (df =
+640) 83.803 (df = 274) F Statistic 2.494 (df = 1; 275) 5.812\*\*\* (df =
+2; 274) 0.113 (df = 1; 640) 1.565 (df = 2; 274)
+======================================================================================================
+Note: *p\<0.1; **p\<0.05; ***p\<0.01
 
 ``` r
-#e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+is_mobile+tried=(monitor=="" &   mousetrackpad==""))]
-#summary(e4_mod_2)
+e7_ate = d[experiment_no %in% c(3, 4, 7) & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no %in% c(3, 4, 7) & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
 
-#e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(is.na(monitor) & is.na(mousetrackpad)), bounding_box_score, in_treatment, is_mobile, WorkTimeInSeconds)] %>% 
-#  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
-#summary(e4_mod_2)
-
-#e4_mod_2 <- d[experiment_no %in% c(3,4), .(tried=as.numeric(is.na(monitor)), bounding_box_score, in_treatment, is_mobile, Reward)] %>% 
-#  .[, lm(bounding_box_score ~ in_treatment+is_mobile+tried)]
-#summary(e4_mod_2)
-
-e4_mod_2 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+is_mobile)]
-stargazer(e4_mod_1, e4_mod_2,  
-          type = 'text', header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
-          column.labels=c("Target Alone", "Cellphone"))
-```
-
-    ## 
-    ## ==============================================================
-    ##                                Dependent variable:            
-    ##                     ------------------------------------------
-    ##                                 bounding_box_score            
-    ##                        Target Alone           Cellphone       
-    ##                             (1)                  (2)          
-    ## --------------------------------------------------------------
-    ## in_treatment              -15.895              -14.181        
-    ##                          p = 0.116            p = 0.155       
-    ##                                                               
-    ## is_mobile                                     50.409***       
-    ##                                               p = 0.003       
-    ##                                                               
-    ## Constant                 33.046***            27.285***       
-    ##                         p = 0.00001           p = 0.0002      
-    ##                                                               
-    ## --------------------------------------------------------------
-    ## Data Subset                 All                  All          
-    ## Observations                277                  277          
-    ## R2                         0.009                0.041         
-    ## Adjusted R2                0.005                0.034         
-    ## Residual Std. Error  83.748 (df = 275)    82.547 (df = 274)   
-    ## F Statistic         2.494 (df = 1; 275) 5.812*** (df = 2; 274)
-    ## ==============================================================
-    ## Note:                              *p<0.1; **p<0.05; ***p<0.01
-
-``` r
-#e4_mod_3 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(monitor))]
-#e4_mod_4 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(didbf))]
-#e4_mod_5 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(age))]
-#e4_mod_6 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(edu))]
-#e4_mod_7 <- d[experiment_no %in% c(3,4), lm(bounding_box_score ~ in_treatment+factor(income))]
-
-#stargazer(e4_mod_3, e4_mod_4, e4_mod_5, e4_mod_6, e4_mod_7,
-#          type = 'text', header = FALSE, table.placement = 'h',  report=('vc*p'),
-#          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
-```
-
-#### 4.1 Power Test
-
-``` r
-e4_ate = d[experiment_no %in% c(3, 4) & in_treatment == 1, mean(bounding_box_score, na.rm=T)] - d[experiment_no %in% c(3, 4) & in_treatment == 0, mean(bounding_box_score, na.rm=T)]
-
-e4_sd = d[experiment_no %in% c(3, 4), sd(bounding_box_score, na.rm=T)]
+e7_sd = d[experiment_no %in% c(3, 4, 7), sd(bounding_box_score, na.rm=T)]
 
 
-power.t.test(delta=abs(e4_ate), 
-             sd=e4_sd, 
+power.t.test(delta=abs(e7_ate), 
+             sd=e7_sd, 
              sig.level = 0.05,
              power = 0.80,
              alternative = "one.sided",
@@ -342,151 +1396,11 @@ power.t.test(delta=abs(e4_ate),
     ## 
     ##      Two-sample t test power calculation 
     ## 
-    ##               n = 345.7973
-    ##           delta = 15.89495
-    ##              sd = 83.97393
+    ##               n = 17560.84
+    ##           delta = 2.020332
+    ##              sd = 76.13563
     ##       sig.level = 0.05
     ##           power = 0.8
     ##     alternative = one.sided
     ## 
     ## NOTE: n is number in *each* group
-
-``` r
-power_curve <- function(x) {
-  result = c()
-
-  for (i in 1:length(x)) {
-    new_n <- power.t.test(delta=abs(e4_ate), 
-             sd=e4_sd, 
-             sig.level = 0.05,
-             power = NULL,
-             alternative = "one.sided",
-             n = x[i])["power"]
-    
-    result <- c(result, new_n)
-  }
-  
-  return(result)
-}
-
-sig_curve <- function(x) {
-  result = c()
-
-  for (i in 1:length(x)) {
-    new_n <- power.t.test(delta=abs(e4_ate), 
-             sd=e4_sd, 
-             sig.level = NULL,
-             power = 0.8,
-             alternative = "one.sided",
-             n = x[i])["sig.level"]
-    
-    result <- c(result, new_n)
-  }
-  
-  return(result)
-}
-
-delta_curve <- function(x) {
-  result = c()
-
-  for (i in 1:length(x)) {
-    new_n <- power.t.test(delta=x[i], 
-             sd=e4_sd, 
-             sig.level = 0.05,
-             power = 0.8,
-             alternative = "one.sided",
-             n = NULL)["n"]
-    
-    result <- c(result, new_n)
-  }
-  
-  return(result)
-}
-curve(power_curve(x), 10, 1000)
-```
-
-![](team_mturk_experiments_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-
-``` r
-#curve(sig_curve(x), 10, 1000)
-#curve(delta_curve(x), 5, 20)
-```
-
-### Experiment 5, threats don’t work
-
-``` r
-e5_mod_1 <- d[experiment_no == 5, lm(bounding_box_score ~ in_treatment)]
-summary(e5_mod_1)
-```
-
-    ## 
-    ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -12.005  -7.388  -4.123   0.854 193.311 
-    ## 
-    ## Coefficients:
-    ##              Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)    13.552      1.848   7.334 6.38e-12 ***
-    ## in_treatment   -1.938      2.606  -0.743    0.458    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 18.01 on 189 degrees of freedom
-    ##   (2 observations deleted due to missingness)
-    ## Multiple R-squared:  0.002916,   Adjusted R-squared:  -0.00236 
-    ## F-statistic: 0.5527 on 1 and 189 DF,  p-value: 0.4582
-
-### Experiment 6, threats still don’t work
-
-``` r
-e6_mod_1 <- d[experiment_no == 6, lm(bounding_box_score ~ in_treatment)]
-summary(e6_mod_1)
-```
-
-    ## 
-    ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment)
-    ## 
-    ## Residuals:
-    ##    Min     1Q Median     3Q    Max 
-    ## -12.02  -8.64  -6.39  -1.38 107.83 
-    ## 
-    ## Coefficients:
-    ##              Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)   13.5632     1.9581   6.927 6.99e-11 ***
-    ## in_treatment  -0.4096     2.7842  -0.147    0.883    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 18.98 on 184 degrees of freedom
-    ## Multiple R-squared:  0.0001176,  Adjusted R-squared:  -0.005317 
-    ## F-statistic: 0.02164 on 1 and 184 DF,  p-value: 0.8832
-
-``` r
-e6_mod_2 <- d[experiment_no %in% c(5,6), lm(bounding_box_score ~ in_treatment+(Reward == "$0.05"))]
-summary(e6_mod_2)
-```
-
-    ## 
-    ## Call:
-    ## lm(formula = bounding_box_score ~ in_treatment + (Reward == "$0.05"))
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -12.399  -8.042  -5.148  -0.011 193.690 
-    ## 
-    ## Coefficients:
-    ##                       Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)            13.1730     1.6439   8.013 1.44e-14 ***
-    ## in_treatment           -1.1838     1.9033  -0.622    0.534    
-    ## Reward == "$0.05"TRUE   0.7731     1.9034   0.406    0.685    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 18.48 on 374 degrees of freedom
-    ##   (2 observations deleted due to missingness)
-    ## Multiple R-squared:  0.001484,   Adjusted R-squared:  -0.003855 
-    ## F-statistic: 0.278 on 2 and 374 DF,  p-value: 0.7575
