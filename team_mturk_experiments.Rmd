@@ -2,7 +2,7 @@
 title: "Team mTurk - Motivating Quality Work"
 author: "Kevin Hanna, Kevin Stone, Changjing Zhao"
 output:
-  pdf_document: 
+  html_document: 
     fig_caption: yes
     toc: yes
     toc_depth: 4
@@ -57,11 +57,13 @@ d[dataset_no %in% c(5,6), experiment := "immediate"]
 
 ```{r formatting_helper_functions, echo=FALSE}
 
+# Formatting helpers
+
 # PDF
 stargazer_type="latex"
 
 # Markdown
-#stargazer_type="text"
+stargazer_type="text"
 
 format_table <- function(table_d, caption = NULL) {
   kable(table_d)
@@ -83,6 +85,8 @@ format_table <- function(table_d, caption = NULL) {
 
 
 ```{r data_summary, echo=FALSE}
+
+
 format_table(
   d[, .(count=.N, mean_score=mean(bounding_box_score, na.rm=T), std_dev=sd(bounding_box_score, na.rm=T)), keyby=.(dataset_no, is_pilot, in_treatment)],
   caption = "Experiment Data Summary"
