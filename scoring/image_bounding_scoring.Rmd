@@ -179,7 +179,14 @@ convert_mturk_bounding <- function(mturk_bounding_boxes) {
   # If there is no bounding boxes for this HIT, return NULL
   if (length(bounding_boxes_list) < 1) {
     print("No rows")
-    return(NULL)
+    ret_dt <- data.table(
+      top = NA,
+      bottom = NA,
+      right = NA,
+      left = NA
+    )
+    
+    return(ret_dt)    
   }
     
   top_results_list <- c()
@@ -314,6 +321,10 @@ extract_image_bounding_data <- function(dt) {
 
 score_bounding_box <- function(true_coords, turker_coords) {
   # Calculate the difference in the top-right and bottom-left points
+  
+  if (is.na(turker_coords[, top])) {
+    return(NA)
+  }
   
   top = as.integer(true_coords[, top]) - turker_coords[, top]
   right = true_coords[, right] - turker_coords[, right]
