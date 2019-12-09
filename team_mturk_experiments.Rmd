@@ -2,7 +2,7 @@
 title: "Team mTurk - Motivating Quality Work"
 author: "Kevin Hanna, Kevin Stone, Changjing Zhao"
 output:
-  html_document: 
+  pdf_document: 
     fig_caption: yes
     toc: yes
     toc_depth: 4
@@ -52,6 +52,11 @@ d[dataset_no %in% c(2), experiment := "social"]
 d[dataset_no %in% c(3,4,7), experiment := "future"]
 d[dataset_no %in% c(5,6), experiment := "immediate"]
 
+# Add a 95th percentil dummy variable
+d[, pct_95 := as.numeric(bounding_box_score<quantile(bounding_box_score, prob=c(0.05), na.rm=T)), by=experiment]
+d[, pct_5 := as.numeric(bounding_box_score<quantile(bounding_box_score, prob=c(0.95), na.rm=T)), by=experiment]
+
+
 ```
 
 
@@ -63,7 +68,7 @@ d[dataset_no %in% c(5,6), experiment := "immediate"]
 stargazer_type="latex"
 
 # Markdown
-stargazer_type="text"
+#stargazer_type="text"
 
 format_table <- function(table_d, caption = NULL) {
   kable(table_d)
@@ -92,7 +97,8 @@ format_table(
   caption = "Experiment Data Summary"
 )
 
-format_table(d[order(dataset_no), .("Mean Score"=mean(bounding_box_score, na.rm=T), 
+format_table(d[order(dataset_no), .("Mean Score"=mean(bounding_box_score, na.rm=T),
+      #"95th pct"=quantile(bounding_box_score, probs=.95, na.rm=TRUE),
       "Treatment"=sum(in_treatment==1), 
       "Control"=sum(in_treatment==0),
       "Total"=sum(in_treatment %in% c(0,1)),
@@ -104,6 +110,19 @@ format_table(d[order(dataset_no), .("Mean Score"=mean(bounding_box_score, na.rm=
   by=dataset_no]
 )
 
+format_table(d[order(dataset_no), .("Mean Score"=mean(bounding_box_score, na.rm=T),
+      #"95th pct"=quantile(bounding_box_score, probs=.95, na.rm=TRUE),
+      "Treatment"=sum(in_treatment==1), 
+      "Control"=sum(in_treatment==0),
+      "Total"=sum(in_treatment %in% c(0,1)),
+      "No Bouding"=sum(is.na(bounding_box_score)),
+      "is_mobile"=sum(is_mobile %in% c(0,1)),
+      "Reward"=max(Reward), # Each only has one
+      "Std Dev"=sd(bounding_box_score, na.rm=T)
+      ), 
+  by=experiment]
+)
+
 format_table(summary(d[, .(bounding_box_score)]))
 
 ```
@@ -111,7 +130,7 @@ format_table(summary(d[, .(bounding_box_score)]))
 
 ## 1. Pilot
 
-For our pilot, we gave the Turkers a negative treatment and asked that they draw a single bounding box on each of 20 images.  We first collected some information about the subject through a survey and then randomly assigned those subjects to treatment and control.  Our primary goal was to understand how our scoring scheme worked, gauge level of variance we should expect in future experiments and test if our covariates collected from our survey were helpful.  We had high attrition and due to a misunderstanding of the Mechanical Turk platform, our assignments to treatment and control failed and we ended up with Turkers not in our experiment in our results, and many ended up in both treatment and control.
+For our pilot, we gave the Turkers a social treatment suggesting their work would be used to improve a government survielance system and asked that they draw a single bounding box on each of 20 images.  We first collected some information about the subject through a survey and then randomly assigned those subjects to treatment and control.  Our primary goal was to understand how our scoring scheme worked, gauge level of variance we should expect in future experiments and test if our covariates collected from our survey explained any of the variance.  We had high attrition and due to a misunderstanding of the Mechanical Turk platform, our assignments to treatment and control failed and we ended up with Turkers not in our experiment in our results, and many ended up in both treatment and control.
 
 We were not able to trust any ATE, but we could at least see the variance, which was exceptionally high.
 
@@ -201,8 +220,7 @@ The results of our regression failed to show any reliable affect of our treatmen
 e2_mod_1 <- d[dataset_no==2, lm(bounding_box_score ~ in_treatment)]
 
 stargazer(e2_mod_1, 
-          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$"))
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p')
           )
 
 ```
@@ -225,8 +243,7 @@ With experiment, the only covariate we had was the amount of time each Turker sp
 e2_mod_3 <- d[dataset_no==2, lm(WorkTimeInSeconds ~ in_treatment)]
 
 stargazer(e2_mod_3,  
-          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")))
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'))
 ```
 
 The results suggest the negative treatment caused Turkers to spend less time on the task, but the p-value is far from statistically significant again.
@@ -240,7 +257,6 @@ The results suggest the negative treatment caused Turkers to spend less time on 
 
 #stargazer(e2_mod_4,  e2_mod_5,
 #          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-#          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
 #         column.labels=c("Target Alone", "With WorkInSeconds Control"))
 
 ```
@@ -282,6 +298,9 @@ In both of our pilots, we used a treatment which we hypothesized would cause the
 #### 3.1.1 EDA
 
 
+
+
+
 #### 3.1.2 Regression Analysis
   
 
@@ -292,7 +311,6 @@ e3_mod_1 <- d[dataset_no==3, lm(bounding_box_score ~ in_treatment)]
 
 stargazer(e3_mod_1, 
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Future Payoff"))
 ```
 
@@ -310,7 +328,6 @@ e3_mod_6 <- d[dataset_no==3, lm(bounding_box_score ~ in_treatment+income)]
 
 stargazer(e3_mod_2, e3_mod_3, e3_mod_4,  
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          #add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Target Alone", "Monitor size", "Did task before", "Age"),
           title="3.1.3 1")
 
@@ -318,7 +335,6 @@ stargazer(e3_mod_2, e3_mod_3, e3_mod_4,
 
 stargazer(e3_mod_5, e3_mod_6, 
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          #add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Education", "Income"),
           title="3.1.3 2")
 ```
@@ -332,7 +348,6 @@ e3_mod_7 <- d[dataset_no==3, lm(bounding_box_score ~ in_treatment+is_mobile)]
 
 stargazer(e3_mod_1, e3_mod_7, 
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Target Alone", "Mobile Control"), title="3.1.3 2")
 ```
 
@@ -348,7 +363,6 @@ e3_mod_3 <- d[dataset_no==3, lm(WorkTimeInSeconds ~ in_treatment)]
 
 stargazer(e3_mod_3, e2_mod_3,
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Future Payoff", "Social"), title="3.1.3 2")
 ```
 
@@ -424,7 +438,6 @@ e4_mod_1 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment)]
 
 stargazer(e4_mod_1, e3_mod_1,  
           type=stargazer_type, header = TRUE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("n=700", "n=100"), title="3.2.2 Regression")
 ```
 
@@ -440,7 +453,6 @@ e4_mod_4 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+is_mo
 
 stargazer(e4_mod_1, e4_mod_2, e4_mod_3, e4_mod_4,  
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
           column.labels=c("Target Alone", "Controlling for Mobile", "Reward", "Mobile and Reward"), title="3.2.2 2")
 
 
@@ -452,8 +464,36 @@ stargazer(e4_mod_1, e4_mod_2, e4_mod_3, e4_mod_4,
 #### 3.2.3 Handling Outliers
 
 
+```{r 3_2_3_EDA, echo=FALSE, fig.height=5, fig.width=10}
+
+par(mfrow=c(1,2))
+hist(d[experiment=="future" & pct_5==1, bounding_box_score], 30, xlab="score", main="Distribution 5th Percentile")
+hist(d[experiment=="future", bounding_box_score], 30, xlab="score", main="Distribution 5th Percentile")
+
+```
+
+
+
+```{r 3_2_3_analysis, echo=FALSE, results='asis'}
+#e4_mod_5 <- d[experiment == "future", lm(in_treatment ~ bounding_box_score)]
+#e4_mod_6 <- d[experiment == "future", lm(in_treatment ~ pct_95)]
+e4_mod_5 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+pct_95)]
+e4_mod_6 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+is_mobile+pct_95)]
+e4_mod_7 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+is_mobile+Reward+pct_95)]
+
+stargazer(e4_mod_5, e4_mod_6, e4_mod_7,  
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels=c("Controlling for Mobile", "Controlling for Mobile and Effort"), title="3.2.3")
+
+
+```
+
 #### 3.2.4 Covariate Balance Check
 
+```{r 3_2_4_covariate_balance, echo=FALSE}
+d[experiment == "future", .(cell=sum(is_cellphone, na.rm=T), not_cell=sum(is_cellphone==0, na.rm=T), 
+                            five_cents=sum(Reward=="$0.05"), twenty_cents=sum(Reward=="$0.20")), by=in_treatment]
+```
 
 #### 3.2.5 Attrition
  
@@ -493,16 +533,14 @@ print(power_4)
 
 ## 5 Cross Comparison
 
-```{r, echo=FALSE, results='asis'}
+```{r 5_cross, echo=FALSE, results='asis'}
 e6_mod_2 <- d[dataset_no %in% c(5,6), lm(bounding_box_score ~ factor(Reward)+in_treatment)]
 e6_mod_3 <- d[dataset_no %in% c(3,4,5,6), lm(bounding_box_score ~ factor(Reward)+in_treatment)]
 e6_mod_4 <- d[dataset_no %in% c(3,4,5,6), lm(bounding_box_score ~ (Reward == "$0.20")+in_treatment)]
 
 
 stargazer(e6_mod_2, e6_mod_3, e6_mod_4,
-          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          add.lines = list(c("Data Subset", "All", "All", "$x==1$")),
-          column.labels=c("Reward"))
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'))
 ```
 
 
