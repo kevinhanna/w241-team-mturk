@@ -33,7 +33,8 @@ d <- fread("./data/experiment_all/experiment_results.csv")
 # None of our experiments required creating multiple bounding boxes on a single image.
 # We are assuming the extra bounding boxes are mistakes and taking the better score.
 remove_extra_bounding_boxes <- function(d) {
-  good_scores <- d[,  .(bounding_box_score = min(bounding_box_score), count = .N), keyby=.(WorkerId, ImageId, experiment_no, in_treatment)] %>% .[count<2, ]
+  good_scores <- d[,  .(bounding_box_score = min(bounding_box_score), count = .N), 
+                   keyby=.(WorkerId, ImageId, experiment_no, in_treatment)]
   d[good_scores, on=.(WorkerId, ImageId, experiment_no, bounding_box_score, in_treatment)]
 }
 

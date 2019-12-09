@@ -1,6 +1,10 @@
 ---
 title: "Team mTurk - Motivating Quality Work"
 author: "Kevin Hanna, Kevin Stone, Changjing Zhao"
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
 output:
   pdf_document: 
     fig_caption: yes
@@ -30,10 +34,14 @@ library(knitr)
 # Read in all the data, we'll use the 'dataset_no' to pull the results from each experiment. 
 d <- fread("./data/experiment_all/experiment_results.csv")
 
-# None of our experiments required creating multiple bounding boxes on a single image.
-# We are assuming the extra bounding boxes are mistakes and taking the better score.
+# Sanity check
+#d[, WorkerId, keyby=.(WorkerId, ImageId, HITId, experiment_no, in_treatment)][, .N, keyby=experiment_no]
+#nrow(d[, WorkerId, keyby=.(WorkerId, ImageId, HITId, experiment_no, in_treatment)])
+#length(d[, .N, keyby=.(WorkerId, ImageId, HITId, experiment_no, in_treatment)][,N>1])
+
 remove_extra_bounding_boxes <- function(d) {
-  good_scores <- d[,  .(bounding_box_score = min(bounding_box_score), count = .N), keyby=.(WorkerId, ImageId, experiment_no, in_treatment)] %>% .[count<2, ]
+  good_scores <- d[,  .(bounding_box_score = min(bounding_box_score), count = .N), 
+                   keyby=.(WorkerId, ImageId, experiment_no, in_treatment)]
   d[good_scores, on=.(WorkerId, ImageId, experiment_no, bounding_box_score, in_treatment)]
 }
 
@@ -98,7 +106,7 @@ format_table(
 )
 
 format_table(d[order(dataset_no), .("Mean Score"=mean(bounding_box_score, na.rm=T),
-      #"95th pct"=quantile(bounding_box_score, probs=.95, na.rm=TRUE),
+      "95th pct"=quantile(bounding_box_score, probs=.95, na.rm=TRUE),
       "Treatment"=sum(in_treatment==1), 
       "Control"=sum(in_treatment==0),
       "Total"=sum(in_treatment %in% c(0,1)),
@@ -110,17 +118,16 @@ format_table(d[order(dataset_no), .("Mean Score"=mean(bounding_box_score, na.rm=
   by=dataset_no]
 )
 
-format_table(d[order(dataset_no), .("Mean Score"=mean(bounding_box_score, na.rm=T),
+format_table(d[order(experiment), .("Mean Score"=mean(bounding_box_score, na.rm=T),
       #"95th pct"=quantile(bounding_box_score, probs=.95, na.rm=TRUE),
       "Treatment"=sum(in_treatment==1), 
       "Control"=sum(in_treatment==0),
       "Total"=sum(in_treatment %in% c(0,1)),
-      "No Bouding"=sum(is.na(bounding_box_score)),
+      "Attriters"=sum(is.na(bounding_box_score)),
       "is_mobile"=sum(is_mobile %in% c(0,1)),
-      "Reward"=max(Reward), # Each only has one
       "Std Dev"=sd(bounding_box_score, na.rm=T)
       ), 
-  by=experiment]
+  by=.(experiment)]
 )
 
 format_table(summary(d[, .(bounding_box_score)]))
@@ -214,10 +221,10 @@ format_table(d[dataset_no==2, .(mean_score=mean(bounding_box_score, na.rm=T), st
 
 ### 2.2 Regression Analysis   
 
-The results of our regression failed to show any reliable affect of our treatment.  The coeffecient is negative, which for our scoring means there is a positive influence from the treatment.  But with a p-value of 0.66 there no information can be gleaned from this with any confidence. 
+The results of our regression failed to show any reliable affect of our treatment.  The coeffecient is negative, which for our scoring means there is a positive influence from the treatment.  But with a p-value of 0.36 there no information can be gleaned from this with any confidence. 
 
 ```{r experiment_2_regression, results='asis', echo=FALSE}
-e2_mod_1 <- d[dataset_no==2, lm(bounding_box_score ~ in_treatment)]
+e2_mod_1 <- d[experiment=="social", lm(bounding_box_score ~ in_treatment)]
 
 stargazer(e2_mod_1, 
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p')
@@ -226,7 +233,7 @@ stargazer(e2_mod_1,
 ```
 
 
-With experiment, the only covariate we had was the amount of time each Turker spent on the task. And working time doesn't seem to be affected by our treatment. 
+With this experiment, the only covariate we had was the amount of time each Turker spent on the task. And working time doesn't seem to be affected by our treatment. 
 
 ```{r, echo=FALSE}
 
@@ -240,7 +247,7 @@ With experiment, the only covariate we had was the amount of time each Turker sp
 
 
 ```{r experiment_2_regression_time, echo=FALSE, results='asis'}
-e2_mod_3 <- d[dataset_no==2, lm(WorkTimeInSeconds ~ in_treatment)]
+e2_mod_3 <- d[experiment=="social", lm(WorkTimeInSeconds ~ in_treatment)]
 
 stargazer(e2_mod_3,  
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'))
@@ -264,7 +271,7 @@ The results suggest the negative treatment caused Turkers to spend less time on 
 
 ### 2.3 Power Test   
 
-To achieve the statistical power of 0.8 at the 0.05 confidence-level with the variance we had in this experiement, we would require nearly 5,800 subjects in both control and treatment. 
+To achieve the statistical power of 0.8 at the 0.05 confidence-level with the variance we had in this experiement, we would require 1,450 subjects in each control and treatment. 
 
 ```{r experiment_2_power_test, echo=FALSE}
 
@@ -284,8 +291,7 @@ print(power_2_1)
 
 ### 2.4 Learnings from our second experiment   
 
-The estimated 11,600 subjects required to achieve the statistical power we needed was far too many, 
-With a p-value of 0.389, even with the 11,600 subjects, we weren't likely to find a statistically significant ATE.  We need to change our experiment and collect more covariates. 
+The estimated 2,900 subjects required to achieve the statistical power we needed was too many. With a p-value of 0.359, even with the 2,900 subjects, we weren't likely to find a statistically significant ATE.  We need to change our experiment and collect more covariates. 
 
 
 
@@ -304,7 +310,7 @@ In both of our pilots, we used a treatment which we hypothesized would cause the
 #### 3.1.2 Regression Analysis
   
 
-At first look there doesn't seem to be any significant treatment affect, the last p-value had gone down from 0.66 in the previous experiment to 0.56 in this, but we only used a quarter the number of subjects.  
+At first look there doesn't seem to be any significant treatment affect, the last p-value had gone down from 0.36 in the previous experiment to 0.28 in this, but we only used a quarter the number of subjects.  
 
 ```{r 3_1_simple_regression, echo=FALSE, results='asis'}
 e3_mod_1 <- d[dataset_no==3, lm(bounding_box_score ~ in_treatment)]
@@ -313,6 +319,7 @@ stargazer(e3_mod_1,
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
           column.labels=c("Future Payoff"))
 ```
+
 
 
 #### 3.1.3 Covariate Regression Analysis
@@ -326,33 +333,40 @@ e3_mod_4 <- d[dataset_no==3, lm(bounding_box_score ~ in_treatment+age)]
 e3_mod_5 <- d[dataset_no==3, lm(bounding_box_score ~ in_treatment+edu)]
 e3_mod_6 <- d[dataset_no==3, lm(bounding_box_score ~ in_treatment+income)]
 
-stargazer(e3_mod_2, e3_mod_3, e3_mod_4,  
+stargazer(e3_mod_1, e3_mod_2, e3_mod_3,  
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          column.labels=c("Target Alone", "Monitor size", "Did task before", "Age"),
-          title="3.1.3 1")
+          column.labels=c("Target Alone", "Monitor size", "Did task before"),
+          title="3.1.3.1")
 
 
 
-stargazer(e3_mod_5, e3_mod_6, 
+stargazer(e3_mod_5, e3_mod_6, e3_mod_4, 
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          column.labels=c("Education", "Income"),
-          title="3.1.3 2")
+          column.labels=c("Education", "Income", "Age"),
+          title="3.1.3.2")
+
+#stargazer(e3_mod_2, e3_mod_3, e3_mod_4, e3_mod_5, e3_mod_6, 
+#          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+#          column.labels=c("Target Alone", "Monitor size", "Did task before", "Age", "Education", "Income"),
+#          title="3.1.3")
+
+
 ```
   
   
-The only covariate which seemed to act as any type of control was the education question, though it wasn't very significant.  However, all of the coeffecients for the screensize question were negative, and by a fairly significant ammount.  The baseline value was cellphone, which can be significantly smaller than all the other types of screens.  So we tested that on its own.
-   
+The only covariate which seemed to act as any type of control was the education question, though it wasn't very significant.  However, all of the coeffecients for the screen size question were negative, and by a fairly significant ammount.  The baseline value was cellphone, which is smaller than all the other types of screens.  So we tested that on its own.
+
    
 ```{r experiment_3_regression_cell, echo=FALSE, results='asis'}
 e3_mod_7 <- d[dataset_no==3, lm(bounding_box_score ~ in_treatment+is_mobile)]
 
 stargazer(e3_mod_1, e3_mod_7, 
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          column.labels=c("Target Alone", "Mobile Control"), title="3.1.3 2")
+          column.labels=c("Target Alone", "Mobile"), title="3.1.3 2")
 ```
 
 
-If the subject is using a cellphone to do the task, their accuracy goes down (score increases), which is intuitive.  Having cellphone as a control decreases the p-value from 0.56 to 0.077.  With more data, this could be even lower. 
+If the subject is using a cellphone to do the task, their accuracy goes down (score increases), which is intuitive.  Having cellphone as a control decreases the p-value from 0.28 to a fairly significant 0.029.  However, this result is still strange in that the treatment seems to be causing the opposite of the hypothesized affect. 
 
 
 As with the previous experiment, we also analyzed how the treatment affected the amount of time they spent on the task.  
@@ -366,12 +380,12 @@ stargazer(e3_mod_3, e2_mod_3,
           column.labels=c("Future Payoff", "Social"), title="3.1.3 2")
 ```
 
-The regression shows those in our future payoff treatment on average spent 23 seconds more time.  
+The regression shows that those in our future payoff treatment on average spent 13 seconds more time, the opposite from our previous treatment, which is what we hypothesize, however, the p-values is quite large.  
 
 
 ```{r experiment_3_summary_time, echo=FALSE, results='asis'}
 
-hist(d[dataset_no==3, WorkTimeInSeconds], breaks = 30)
+hist(d[dataset_no==3, WorkTimeInSeconds], breaks = 30, main="Time Spend on Task", xlab="Seconds")
 
 ```
 
@@ -418,7 +432,7 @@ curve(power_curve(x), 10, 2000, ylab = "Statistical Power", xlab="n", main="Subj
 
 ```
 
-The power calculation when using the negative treatment, telling those in treatment that they were doing work for a government surveillance system estimated we needed 5,800 subjects.  Using an incentive of possible future work as the treatment, the ATE has less variance, and estimated that we only need 835 subjects to get 0.80 statistical power. 
+The power calculation when using the negative treatment, telling those in treatment that they were doing work for a government surveillance system estimated we needed 5,800 subjects.  Using an incentive of possible future work as the treatment, the ATE has less variance, and estimated that we only need 255 subjects in each group to get 0.80 statistical power. 
 
 
 ### 3.2 Future Payoff - Statistical Power (need better description)
@@ -442,7 +456,7 @@ stargazer(e4_mod_1, e3_mod_1,
 ```
 
 
-The results are much better, adding another 700 subjects helped decrease the p-value from 0.56 to 0.05, and our ATE is -11.8, a negative number means the bounding boxes from treatment are more accurate.  Controlling using mobile devices as a control, we see a much of the variance is explained by the use of mobile devices, though our p-value decreased when we used this control.   
+The results happend to be more inline with our hypothesis after adding another 600 subjects.  The p-value decrease the p-value from 0.28 to 0.032, and our ATE is -13.1, a negative number means the bounding boxes from treatment are more accurate.  Controlling using mobile devices as a control, we see a much of the variance is explained by the use of mobile devices, though our p-value increases this time when we used this control.   
 
 ```{r experiment_4_compare_previous, echo=FALSE, results='asis'}
 
@@ -453,7 +467,7 @@ e4_mod_4 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+is_mo
 
 stargazer(e4_mod_1, e4_mod_2, e4_mod_3, e4_mod_4,  
           type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          column.labels=c("Target Alone", "Controlling for Mobile", "Reward", "Mobile and Reward"), title="3.2.2 2")
+          column.labels=c("Target Alone", "Mobile", "Reward", "Mobile and Reward"), title="3.2.2 2")
 
 
 ```
@@ -477,13 +491,13 @@ hist(d[experiment=="future", bounding_box_score], 30, xlab="score", main="Distri
 ```{r 3_2_3_analysis, echo=FALSE, results='asis'}
 #e4_mod_5 <- d[experiment == "future", lm(in_treatment ~ bounding_box_score)]
 #e4_mod_6 <- d[experiment == "future", lm(in_treatment ~ pct_95)]
-e4_mod_5 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+pct_95)]
-e4_mod_6 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+is_mobile+pct_95)]
-e4_mod_7 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+is_mobile+Reward+pct_95)]
+#e4_mod_5 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+pct_95)]
+#e4_mod_6 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+is_mobile+pct_95)]
+#e4_mod_7 <- d[experiment == "future", lm(bounding_box_score ~ in_treatment+is_mobile+Reward+pct_95)]
 
-stargazer(e4_mod_5, e4_mod_6, e4_mod_7,  
-          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
-          column.labels=c("Controlling for Mobile", "Controlling for Mobile and Effort"), title="3.2.3")
+#stargazer(e4_mod_5, e4_mod_6, e4_mod_7,  
+#          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+#          column.labels=c("Controlling for Mobile", "Controlling for Mobile and Effort"), title="3.2.3")
 
 
 ```
@@ -492,7 +506,16 @@ stargazer(e4_mod_5, e4_mod_6, e4_mod_7,
 
 ```{r 3_2_4_covariate_balance, echo=FALSE}
 d[experiment == "future", .(cell=sum(is_cellphone, na.rm=T), not_cell=sum(is_cellphone==0, na.rm=T), 
-                            five_cents=sum(Reward=="$0.05"), twenty_cents=sum(Reward=="$0.20")), by=in_treatment]
+                            five_cents=sum(Reward=="$0.05"), twenty_cents=sum(Reward=="$0.20"), attriters=sum(is.na(bounding_box_score))), by=in_treatment]
+
+#d[order(c(experiment)), .(cell=sum(is_cellphone, na.rm=T), 
+#      not_cell=sum(is_cellphone==0, na.rm=T), 
+#      two_cents=sum(Reward=="$0.02"), 
+#      five_cents=sum(Reward=="$0.05"), 
+#      twenty_cents=sum(Reward=="$0.20"), 
+#      attrit=sum(is.na(bounding_box_score))), 
+# by=c("in_treatment", "experiment")]
+
 ```
 
 #### 3.2.5 Attrition
