@@ -599,7 +599,7 @@ d6 <- fread("./data/6_boxes/6_Boxes_Score_File.csv")
 d6[, iou_score_filt:=ifelse(iou_score==-999, NA, iou_score)]
 d6[, euclidean_score_filt:=ifelse(iou_score==-999, NA, euclidean_score)]
 
-mean_d <- d6[, .(euclidean_score=mean(euclidean_score), iou_score=mean(iou_score), iou_score_filt=mean(iou_score_filt), euclidean_score_filt=mean(euclidean_score_filt)), keyby=.(WorkerId, Treat,Survey_Q1,Survey_Q2)]
+mean_d <- d6[, .(euclidean_score=mean(euclidean_score, na.rm=T), iou_score=mean(iou_score, na.rm=T), iou_score_filt=mean(iou_score_filt, na.rm=T), euclidean_score_filt=mean(euclidean_score_filt, na.rm=T)), keyby=.(WorkerId, Treat,Survey_Q1,Survey_Q2)]
 
 
 
