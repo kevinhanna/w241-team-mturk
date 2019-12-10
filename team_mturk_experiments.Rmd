@@ -130,6 +130,21 @@ format_table(d[order(experiment), .("Mean Score"=mean(bounding_box_score, na.rm=
   by=.(experiment)]
 )
 
+
+
+format_table(d[order(experiment), .(
+      #"Mean Score"=mean(bounding_box_score, na.rm=T),
+      #"95th pct"=quantile(bounding_box_score, probs=.95, na.rm=TRUE),
+      #"Treatment"=sum(in_treatment==1), 
+      #"Control"=sum(in_treatment==0),
+      "Total"=.N,
+      "Attriters"=sum(is.na(bounding_box_score))
+      #"is_mobile"=sum(is_mobile %in% c(0,1))
+      #"Std Dev"=sd(bounding_box_score, na.rm=T)
+      ), 
+  by=.(experiment, in_treatment)]
+)
+
 format_table(summary(d[, .(bounding_box_score)]))
 
 ```
@@ -427,7 +442,7 @@ power_curve <- function(x) {
   return(result)
 }
 
-curve(power_curve(x), 10, 2000, ylab = "Statistical Power", xlab="n", main="Subjects Required for 80% Power, p-value=0.05")
+curve(power_curve(x), 10, 1200, ylab = "Statistical Power", xlab="n", main="Subjects Required for 80% Power, p-value=0.05")
 
 
 ```
@@ -505,8 +520,8 @@ hist(d[experiment=="future", bounding_box_score], 30, xlab="score", main="Distri
 #### 3.2.4 Covariate Balance Check
 
 ```{r 3_2_4_covariate_balance, echo=FALSE}
-d[experiment == "future", .(cell=sum(is_cellphone, na.rm=T), not_cell=sum(is_cellphone==0, na.rm=T), 
-                            five_cents=sum(Reward=="$0.05"), twenty_cents=sum(Reward=="$0.20"), attriters=sum(is.na(bounding_box_score))), by=in_treatment]
+format_table(d[experiment == "future", .(mobile=sum(is_cellphone==1, na.rm=T),
+                            five_cents=sum(Reward=="$0.05"), twenty_cents=sum(Reward=="$0.20"), attriters=sum(is.na(bounding_box_score))), by=in_treatment])
 
 #d[order(c(experiment)), .(cell=sum(is_cellphone, na.rm=T), 
 #      not_cell=sum(is_cellphone==0, na.rm=T), 
@@ -517,6 +532,10 @@ d[experiment == "future", .(cell=sum(is_cellphone, na.rm=T), not_cell=sum(is_cel
 # by=c("in_treatment", "experiment")]
 
 ```
+
+
+
+
 
 #### 3.2.5 Attrition
  
@@ -532,7 +551,11 @@ d[experiment == "future", .(cell=sum(is_cellphone, na.rm=T), not_cell=sum(is_cel
 ```{r, echo=FALSE, results='asis'}
 
 e5_mod_1 <- d[experiment == "immediate", lm(bounding_box_score ~ in_treatment)]
-summary(e5_mod_1)
+#summary(e5_mod_1)
+
+stargazer(e5_mod_1,   
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels=c("Target Alone"))
 ```
 
 #### 4.3 Power Test
@@ -557,15 +580,125 @@ print(power_4)
 ## 5 Cross Comparison
 
 ```{r 5_cross, echo=FALSE, results='asis'}
-e6_mod_2 <- d[dataset_no %in% c(5,6), lm(bounding_box_score ~ factor(Reward)+in_treatment)]
-e6_mod_3 <- d[dataset_no %in% c(3,4,5,6), lm(bounding_box_score ~ factor(Reward)+in_treatment)]
-e6_mod_4 <- d[dataset_no %in% c(3,4,5,6), lm(bounding_box_score ~ (Reward == "$0.20")+in_treatment)]
+
+d[, high_reward := as.numeric(Reward == "$0.20")]
+e6_mod_2 <- d[dataset_no %in% c(3,4,5,6,7), lm(bounding_box_score ~ in_treatment)]
+e6_mod_3 <- d[dataset_no %in% c(3,4,5,6,7), lm(bounding_box_score ~ high_reward)]
+e6_mod_4 <- d[dataset_no %in% c(3,4,5,6,7), lm(bounding_box_score ~ in_treatment+factor(Reward))]
 
 
 stargazer(e6_mod_2, e6_mod_3, e6_mod_4,
-          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'))
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels = c("Target Alone", "High Reward Dummy", "Reward Factor"))
 ```
 
 
+```{r 6images, echo=FALSE, results='asis'}
+d6 <- fread("./data/6_boxes/6_Boxes_Score_File.csv")
 
+d6[, iou_score_filt:=ifelse(iou_score==-999, NA, iou_score)]
+d6[, euclidean_score_filt:=ifelse(iou_score==-999, NA, euclidean_score)]
+
+mean_d <- d6[, .(euclidean_score=mean(euclidean_score), iou_score=mean(iou_score), iou_score_filt=mean(iou_score_filt), euclidean_score_filt=mean(euclidean_score_filt)), keyby=.(WorkerId, Treat,Survey_Q1,Survey_Q2)]
+
+
+
+d6[, bad_data := as.numeric(iou_score < 0.1)]
+
+mod1 <- lm(euclidean_score~Treat, data=d6)
+mod2 <- lm(euclidean_score~Treat, data=mean_d)
+
+
+mod3 <- lm(euclidean_score~Treat, data=d6)
+mod4 <- lm(euclidean_score~Treat+bad_data, data=d6)
+
+mod5 <- lm(euclidean_score~Treat+as.factor(Survey_Q1)+as.factor(Survey_Q2), data=d6)
+mod6 <- lm(euclidean_score~Treat+as.factor(Survey_Q1)+as.factor(Survey_Q2)+bad_data, data=d6)
+
+
+stargazer(mod1, mod2,  
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels=c("Individual Images", "Grouped Workers"))
+
+stargazer(mod3, mod4,    
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels=c("Target Alone", "Bad Data Control"))
+
+stargazer(mod5, mod6,    
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels=c("Survey Controls", "Survey and Bad Data"))
+
+```
+
+
+```{r 6images_filt, echo=FALSE, results='asis'}
+
+filt_mod_eu <- lm(euclidean_score_filt~Treat, data=d6)
+filt_block_mod_eu <- lm(euclidean_score_filt~Treat, data=mean_d)
+
+filt_mod_iou <- lm(iou_score_filt~Treat, data=d6)
+filt_block_mod_iou <- lm(iou_score_filt~Treat, data=mean_d)
+
+filt_mod_eu_cont <- lm(euclidean_score_filt~Treat+as.factor(Survey_Q1)+as.factor(Survey_Q2), data=d6)
+filt_block_mod_eu_cont <- lm(euclidean_score_filt~Treat+as.factor(Survey_Q1)+as.factor(Survey_Q2), data=mean_d)
+
+filt_mod_iou_cont <- lm(iou_score_filt~Treat+as.factor(Survey_Q1)+as.factor(Survey_Q2), data=d6)
+filt_block_mod_iou_cont <- lm(iou_score_filt~Treat+as.factor(Survey_Q1)+as.factor(Survey_Q2), data=mean_d)
+
+
+stargazer(filt_mod_eu, filt_mod_iou,  
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels=c("Euclidean", "Intersection Over Union"), title = "Individual image scores, no Controls")
+
+stargazer(filt_mod_eu_cont, filt_mod_iou_cont,  
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels=c("Euclidean", "Intersection Over Union"), title = "Individual image scores, with Controls")
+
+stargazer(filt_block_mod_eu, filt_block_mod_iou,  
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels=c("Euclidean", "Intersection Over Union"), title = "Subject mean scores, no Controls")
+
+stargazer(filt_block_mod_eu_cont, filt_block_mod_iou_cont,  
+          type=stargazer_type, header = FALSE, table.placement = 'h', report=('vc*p'),
+          column.labels=c("Euclidean", "Intersection Over Union"), title = "Subject mean scores, with Controls")
+
+
+```
+
+```{r experiment_6img_power_test, echo=FALSE}
+
+e5_ate = d6[Treat == 1, mean(euclidean_score, na.rm=T)] - d6[Treat == 0, mean(euclidean_score, na.rm=T)]
+e5_sd = d6[, sd(euclidean_score, na.rm=T)]
+
+
+power_5 = power.t.test(delta=abs(e5_ate), 
+             sd=e5_sd, 
+             sig.level = 0.05,
+             power = 0.80,
+             alternative = "one.sided",
+             n = NULL)
+
+print(power_5)
+```
+
+
+```{r}
+t.test(d6[Treat==0,euclidean_score], d6[Treat==1,euclidean_score])
+t.test(d6[Treat==0&iou_score>=0,euclidean_score], d6[Treat==1&iou_score>=0,euclidean_score])
+t.test(euclidean_score~Treat, data=d6)
+```
+
+```{r}
+t.test(d6[Treat==0,iou_score_filt], d6[Treat==1,iou_score_filt])
+
+t.test(iou_score_filt~Treat, data=d6)
+
+summary(lm(iou_score~euclidean_score, data=d6))
+
+summary(d6[, iou_score])
+```
+
+```{r}
+summary(lm(bad_data~Treat, data=d6))
+```
 
